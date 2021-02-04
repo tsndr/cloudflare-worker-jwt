@@ -29,7 +29,6 @@ const payload = jwt.decode(token)
 
 Signs a payload and returns the token.
 
-#### Parameters
 `payload`
 Can be an object, buffer or a string.
 
