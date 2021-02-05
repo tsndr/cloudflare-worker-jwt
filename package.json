@@ -1,6 +1,6 @@
 {
   "name": "@tsndr/cloudflare-worker-jwt",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A lightweight JWT implementation with ZERO dependencies for Cloudflare Worker",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
     "cloudflare-worker"
   ],
   "author": "Tobias Schneider",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/tsndr/cloudflare-worker-jwt/issues"
   },
