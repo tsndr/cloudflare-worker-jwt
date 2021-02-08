@@ -18,7 +18,7 @@ const jwt = require('@tsndr/cloudflare-worker-jwt')
 const token = jwt.sign({ name: 'John Doe', email: 'john.doe@gmail.com' }, 'secret')
 
 // Verifing token
-const isValid = jwt.verify(token, secret)
+const isValid = jwt.verify(token, 'secret')
 
 // Decoding token
 const payload = jwt.decode(token)
