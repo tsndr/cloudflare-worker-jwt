@@ -4,7 +4,8 @@
   "description": "A lightweight JWT implementation with ZERO dependencies for Cloudflare Worker",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "declarations": "tsc"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/tsndr/cloudflare-worker-jwt/issues"
   },
-  "homepage": "https://github.com/tsndr/cloudflare-worker-jwt#readme"
+  "homepage": "https://github.com/tsndr/cloudflare-worker-jwt#readme",
+  "devDependencies": {
+    "typescript": "^4.2.4"
+  }
 }

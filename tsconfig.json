@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "allowJs": true,
+    "declaration": true,
+    "outDir": "./",
+    "skipLibCheck": true,
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "index.js"
+  ]
+}
