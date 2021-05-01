@@ -27,9 +27,7 @@ class JWT {
         }
     }
     utf8ToUint8Array(str) {
-        const chars = []
-        str = btoa(unescape(encodeURIComponent(str)))
-        return Base64URL.parse(str)
+        return Base64URL.parse(btoa(unescape(encodeURIComponent(str))))
     }
     async sign(payload, secret, alg = 'HS256') {
         if (payload === null || typeof payload !== 'object')
