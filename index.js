@@ -29,18 +29,18 @@ class JWT {
     utf8ToUint8Array(str) {
         return Base64URL.parse(btoa(unescape(encodeURIComponent(str))))
     }
-    async sign(payload, secret, alg = 'HS256') {
+    async sign(payload, secret, algorithm = 'HS256') {
         if (payload === null || typeof payload !== 'object')
             throw new Error('payload must be an object')
         if (typeof secret !== 'string')
             throw new Error('secret must be a string')
-        if (typeof alg !== 'string')
-            throw new Error('alg must be a string')
-        const importAlgorithm = this.algorithms[alg]
+        if (typeof algorithm !== 'string')
+            throw new Error('algorithm must be a string')
+        const importAlgorithm = this.algorithms[algorithm]
         if (!importAlgorithm)
             throw new Error('algorithm not found')
         const payloadAsJSON = JSON.stringify(payload)
-        const partialToken = `${Base64URL.stringify(this.utf8ToUint8Array(JSON.stringify({ alg, typ: 'JWT' })))}.${Base64URL.stringify(this.utf8ToUint8Array(payloadAsJSON))}`
+        const partialToken = `${Base64URL.stringify(this.utf8ToUint8Array(JSON.stringify({ alg: algorithm, typ: 'JWT' })))}.${Base64URL.stringify(this.utf8ToUint8Array(payloadAsJSON))}`
         const key = await crypto.subtle.importKey('raw', this.utf8ToUint8Array(secret), importAlgorithm, false, ['sign'])
         const characters = payloadAsJSON.split('')
         const it = this.utf8ToUint8Array(payloadAsJSON).entries()
@@ -54,17 +54,17 @@ class JWT {
         const signature = await crypto.subtle.sign(importAlgorithm.name, key, this.utf8ToUint8Array(partialToken))
         return `${partialToken}.${Base64URL.stringify(new Uint8Array(signature))}`
     }
-    async verify(token, secret, alg = 'HS256') {
+    async verify(token, secret, algorithm = 'HS256') {
         if (typeof token !== 'string')
             throw new Error('token must be a string')
         if (typeof secret !== 'string')
             throw new Error('secret must be a string')
-        if (typeof alg !== 'string')
-            throw new Error('alg must be a string')
+        if (typeof algorithm !== 'string')
+            throw new Error('algorithm must be a string')
         const tokenParts = token.split('.')
         if (tokenParts.length !== 3)
             throw new Error('token must have 3 parts')
-        const importAlgorithm = this.algorithms[alg]
+        const importAlgorithm = this.algorithms[algorithm]
         if (!importAlgorithm)
             throw new Error('algorithm not found')
         const keyData = this.utf8ToUint8Array(secret)
