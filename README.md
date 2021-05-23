@@ -4,8 +4,14 @@ A lightweight JWT implementation with ZERO dependencies for Cloudflare Workers.
 
 ## Contents
 
-- [Usage](#usage)
 - [Install](#install)
+- [Usage](#usage)
+
+## Install
+
+```
+npm i @tsndr/cloudflare-worker-jwt
+```
 
 ## Usage
 
@@ -69,12 +75,3 @@ Argument    | Type     | Satus    | Default | Description
 
 #### `return`
 returns payload `object`
-
-<hr>
-
-
-## Install
-
-```
-npm i @tsndr/cloudflare-worker-jwt
-```
