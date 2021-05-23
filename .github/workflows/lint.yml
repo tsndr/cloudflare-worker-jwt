@@ -1,8 +1,6 @@
-name: Node.js CI
+name: Lint
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -19,5 +17,3 @@ jobs:
           node-version: 15.x
       - run: npm ci
       - run: npm run lint --if-present
-      - run: npm run build --if-present
-      - run: npm test
