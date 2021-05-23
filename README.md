@@ -28,7 +28,6 @@ const isValid = jwt.verify(token, 'secret')
 
 // Decoding token
 const payload = jwt.decode(token)
-
 ```
 
 <hr>
