@@ -26,8 +26,27 @@ class JWT {
             }
         }
     }
-    utf8ToUint8Array(str) {
+    _utf8ToUint8Array(str) {
         return Base64URL.parse(btoa(unescape(encodeURIComponent(str))))
+    }
+    _decodePayload(raw) {
+        switch (raw.length % 4) {
+            case 0:
+                break
+            case 2:
+                raw += '=='
+                break
+            case 3:
+                raw += '='
+                break
+            default:
+                throw new Error('Illegal base64url string!')
+        }
+        try {
+            return JSON.parse(decodeURIComponent(escape(atob(raw))))
+        } catch {
+            return null
+        }
     }
     async sign(payload, secret, algorithm = 'HS256') {
         if (payload === null || typeof payload !== 'object')
@@ -39,11 +58,12 @@ class JWT {
         const importAlgorithm = this.algorithms[algorithm]
         if (!importAlgorithm)
             throw new Error('algorithm not found')
+        payload.iat = Math.floor(Date.now() / 1000)
         const payloadAsJSON = JSON.stringify(payload)
-        const partialToken = `${Base64URL.stringify(this.utf8ToUint8Array(JSON.stringify({ alg: algorithm, typ: 'JWT' })))}.${Base64URL.stringify(this.utf8ToUint8Array(payloadAsJSON))}`
-        const key = await crypto.subtle.importKey('raw', this.utf8ToUint8Array(secret), importAlgorithm, false, ['sign'])
+        const partialToken = `${Base64URL.stringify(this._utf8ToUint8Array(JSON.stringify({ alg: algorithm, typ: 'JWT' })))}.${Base64URL.stringify(this._utf8ToUint8Array(payloadAsJSON))}`
+        const key = await crypto.subtle.importKey('raw', this._utf8ToUint8Array(secret), importAlgorithm, false, ['sign'])
         const characters = payloadAsJSON.split('')
-        const it = this.utf8ToUint8Array(payloadAsJSON).entries()
+        const it = this._utf8ToUint8Array(payloadAsJSON).entries()
         let i = 0
         const result = []
         let current
@@ -51,7 +71,7 @@ class JWT {
             result.push([current.value[1], characters[i]])
             i++
         }
-        const signature = await crypto.subtle.sign(importAlgorithm.name, key, this.utf8ToUint8Array(partialToken))
+        const signature = await crypto.subtle.sign(importAlgorithm.name, key, this._utf8ToUint8Array(partialToken))
         return `${partialToken}.${Base64URL.stringify(new Uint8Array(signature))}`
     }
     async verify(token, secret, algorithm = 'HS256') {
@@ -67,33 +87,21 @@ class JWT {
         const importAlgorithm = this.algorithms[algorithm]
         if (!importAlgorithm)
             throw new Error('algorithm not found')
-        const keyData = this.utf8ToUint8Array(secret)
+        const keyData = this._utf8ToUint8Array(secret)
         const key = await crypto.subtle.importKey('raw', keyData, importAlgorithm, false, ['sign'])
         const partialToken = tokenParts.slice(0, 2).join('.')
+        const payload = this._decodePayload(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/'))
+        if (payload.nbf && payload.nbf >= Math.floor(Date.now() / 1000))
+            return false
+        if (payload.exp && payload.exp < Math.floor(Date.now() / 1000))
+            return false
         const signaturePart = tokenParts[2]
-        const messageAsUint8Array = this.utf8ToUint8Array(partialToken)
+        const messageAsUint8Array = this._utf8ToUint8Array(partialToken)
         const res = await crypto.subtle.sign(importAlgorithm.name, key, messageAsUint8Array)
         return Base64URL.stringify(new Uint8Array(res)) === signaturePart
     }
     decode(token) {
-        let output = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
-        switch (output.length % 4) {
-            case 0:
-                break
-            case 2:
-                output += '=='
-                break
-            case 3:
-                output += '='
-                break
-            default:
-                throw new Error('Illegal base64url string!')
-        }
-        try {
-            return JSON.parse(decodeURIComponent(escape(atob(output))))
-        } catch {
-            return null
-        }
+        return this._decodePayload(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
     }
 }
 
