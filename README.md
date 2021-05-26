@@ -2,16 +2,60 @@
 
 A lightweight JWT implementation with ZERO dependencies for Cloudflare Workers.
 
+
 ## Contents
 
 - [Install](#install)
-- [Usage](#usage)
 - [Examples](#examples)
+- [Usage](#usage)
+
 
 ## Install
 
 ```
 npm i @tsndr/cloudflare-worker-jwt
+```
+
+
+## Examples
+
+### Basic Example
+
+```javascript
+async () => {
+    const jwt = require('@tsndr/cloudflare-worker-jwt')
+
+    // Creating a token
+    const token = await jwt.sign({ name: 'John Doe', email: 'john.doe@gmail.com' }, 'secret')
+
+    // Verifing token
+    const isValid = await jwt.verify(token, 'secret')
+
+    // Decoding token
+    const payload = jwt.decode(token)
+}
+```
+
+### Restrict Timeframe
+
+```javascript
+async () => {
+    const jwt = require('@tsndr/cloudflare-worker-jwt')
+
+    // Creating a token
+    const token = await jwt.sign({
+        name: 'John Doe',
+        email: 'john.doe@gmail.com',
+        nbf: Math.floor(Date.now() / 1000) + (60 * 60),      // Not before: Now + 1h
+        exp: Math.floor(Date.now() / 1000) + (2 * (60 * 60)) // Expires: Now + 2h
+    }, 'secret')
+
+    // Verifing token
+    const isValid = await jwt.verify(token, 'secret') // false
+
+    // Decoding token
+    const payload = jwt.decode(token) // { name: 'John Doe', email: 'john.doe@gmail.com', ... }
+}
 ```
 
 ## Usage
@@ -60,44 +104,3 @@ Argument    | Type     | Satus    | Default | Description
 
 #### `return`
 Returns payload `object`.
-
-## Examples
-
-### Basic Example
-
-```javascript
-async () => {
-    const jwt = require('@tsndr/cloudflare-worker-jwt')
-
-    // Creating a token
-    const token = await jwt.sign({ name: 'John Doe', email: 'john.doe@gmail.com' }, 'secret')
-
-    // Verifing token
-    const isValid = await jwt.verify(token, 'secret')
-
-    // Decoding token
-    const payload = jwt.decode(token)
-}
-```
-
-### Restrict Timeframe
-
-```javascript
-async () => {
-    const jwt = require('@tsndr/cloudflare-worker-jwt')
-
-    // Creating a token
-    const token = await jwt.sign({
-        name: 'John Doe',
-        email: 'john.doe@gmail.com',
-        nbf: Math.floor(Date.now() / 1000) + (60 * 60),      // Not before: Now + 1h
-        exp: Math.floor(Date.now() / 1000) + (2 * (60 * 60)) // Expires: Now + 2h
-    }, 'secret')
-
-    // Verifing token
-    const isValid = await jwt.verify(token, 'secret') // false
-
-    // Decoding token
-    const payload = jwt.decode(token) // { name: 'John Doe', email: 'john.doe@gmail.com', ... }
-}
-```
