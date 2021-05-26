@@ -31,7 +31,7 @@ Argument    | Type     | Satus    | Default | Description
 `algorithm` | `string` | optional | `HS256` | The algorithm used to sign the payload, possible values: `HS256` or `HS512`
 
 #### `return`
-returns token as a `string`
+Returns token as a `string`.
 
 <hr>
 
