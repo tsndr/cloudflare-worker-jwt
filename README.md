@@ -31,6 +31,10 @@ async () => {
     // Verifing token
     const isValid = await jwt.verify(token, 'secret')
 
+    // Check for validity
+    if (!isValid)
+        return
+
     // Decoding token
     const payload = jwt.decode(token)
 }
@@ -52,6 +56,10 @@ async () => {
 
     // Verifing token
     const isValid = await jwt.verify(token, 'secret') // false
+
+    // Check for validity
+    if (!isValid)
+        return
 
     // Decoding token
     const payload = jwt.decode(token) // { name: 'John Doe', email: 'john.doe@gmail.com', ... }
