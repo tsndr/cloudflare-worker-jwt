@@ -87,7 +87,7 @@ class JWT {
             throw new Error('options.algorithm must be a string')
         const tokenParts = token.split('.')
         if (tokenParts.length !== 3)
-            throw new Error('token must have 3 parts')
+            throw new Error('token must consist of 3 parts')
         const importAlgorithm = this.algorithms[options.algorithm]
         if (!importAlgorithm)
             throw new Error('algorithm not found')

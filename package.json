@@ -3,9 +3,6 @@
   "version": "1.1.4",
   "description": "A lightweight JWT implementation with ZERO dependencies for Cloudflare Worker",
   "main": "index.js",
-  "scripts": {
-    "lint": "tslint index.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tsndr/cloudflare-worker-jwt.git"
@@ -22,8 +19,5 @@
   "bugs": {
     "url": "https://github.com/tsndr/cloudflare-worker-jwt/issues"
   },
-  "homepage": "https://github.com/tsndr/cloudflare-worker-jwt#readme",
-  "devDependencies": {
-    "tslint": "^6.1.3"
-  }
+  "homepage": "https://github.com/tsndr/cloudflare-worker-jwt#readme"
 }
