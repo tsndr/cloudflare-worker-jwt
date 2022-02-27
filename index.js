@@ -9,7 +9,7 @@ class Base64URL {
 
 class JWT {
     constructor() {
-        if (!crypto || !crypto.subtle)
+        if (typeof crypto === 'undefined' || !crypto.subtle)
             throw new Error('Crypto not supported!')
         this.algorithms = {
             ES256: { name: 'ECDSA', namedCurve: 'P-256', hash: { name: 'SHA-256' } },
