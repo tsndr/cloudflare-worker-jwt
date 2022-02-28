@@ -42,6 +42,7 @@ type JWTAlgorithm = 'ES256' | 'ES384' | 'ES512' | 'HS256' | 'HS384' | 'HS512' | 
 type JWTSignOptions = {
     algorithm?: JWTAlgorithm,
     keyid?: string
+    header?: object
 }
 
 type JWTVerifyOptions = {
