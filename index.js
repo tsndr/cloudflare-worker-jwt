@@ -53,9 +53,9 @@ class JWT {
             return null
         }
     }
-    async sign(payload, secret, options = { algorithm: 'HS256' }) {
+    async sign(payload, secret, options = { algorithm: 'HS256', header: { typ: 'JWT' } }) {
         if (typeof options === 'string')
-            options = { algorithm: options }
+            options = { algorithm: options, header: { typ: 'JWT' } }
         if (payload === null || typeof payload !== 'object')
             throw new Error('payload must be an object')
         if (typeof secret !== 'string')
@@ -67,7 +67,7 @@ class JWT {
             throw new Error('algorithm not found')
         payload.iat = Math.floor(Date.now() / 1000)
         const payloadAsJSON = JSON.stringify(payload)
-        const partialToken = `${Base64URL.stringify(this._utf8ToUint8Array(JSON.stringify({ alg: options.algorithm, kid: options.keyid })))}.${Base64URL.stringify(this._utf8ToUint8Array(payloadAsJSON))}`
+        const partialToken = `${Base64URL.stringify(this._utf8ToUint8Array(JSON.stringify({ ...options.header, alg: options.algorithm, kid: options.keyid })))}.${Base64URL.stringify(this._utf8ToUint8Array(payloadAsJSON))}`
         let keyFormat = 'raw'
         let keyData
         if (secret.startsWith('-----BEGIN')) {
