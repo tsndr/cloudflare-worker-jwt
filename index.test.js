@@ -33,13 +33,20 @@ const notBeforePayload = {
 }
 
 test.each`
-    algorithm  | secret          | expectedToken
-    ${"HS256"} | ${"the-secret"} | ${"eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.MrkOa4BhYkyOvbIRktZN03OnEbxpe2N6wcBs9jbO6Uk"}
-    ${"HS384"} | ${"the-secret"} | ${"eyJhbGciOiJIUzM4NCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.qpN-I6iV-la9Azfww8vqPqsKL2-o-TBXQCjXGkv2K1Nimnx5DqAomxS4Eh3cTqWR"}
-    ${"HS512"} | ${"the-secret"} | ${"eyJhbGciOiJIUzUxMiJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.8qcHh9YDvpcwr1WP6NX8UlwkPsCR4ZniOYzcxo0kbwTdJq_S1MhubLHW4Jtj2bcegbm9yOHQEN_Hk3Yi6x-ZPg"}
+    algorithm    | secret          | expectedToken
+    ${"HS256"}   | ${"the-secret"} | ${"eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.MrkOa4BhYkyOvbIRktZN03OnEbxpe2N6wcBs9jbO6Uk"}
+    ${"HS384"}   | ${"the-secret"} | ${"eyJhbGciOiJIUzM4NCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.qpN-I6iV-la9Azfww8vqPqsKL2-o-TBXQCjXGkv2K1Nimnx5DqAomxS4Eh3cTqWR"}
+    ${"HS512"}   | ${"the-secret"} | ${"eyJhbGciOiJIUzUxMiJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.8qcHh9YDvpcwr1WP6NX8UlwkPsCR4ZniOYzcxo0kbwTdJq_S1MhubLHW4Jtj2bcegbm9yOHQEN_Hk3Yi6x-ZPg"}
 `("encode a jwt payload", async ({ algorithm, secret, expectedToken }) => {
     expect(await JWT.sign(staticPayload, secret, { algorithm })).toEqual(expectedToken)
 })
+
+test("encoding uses a default algorithm", async () => {
+    const secret = "the-secret";
+    const expectedToken = "eyJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.MrkOa4BhYkyOvbIRktZN03OnEbxpe2N6wcBs9jbO6Uk";
+    expect(await JWT.sign(staticPayload, secret)).toEqual(expectedToken)
+    expect(await JWT.sign(staticPayload, secret, { keyid: undefined })).toEqual(expectedToken)
+});
 
 test.each`
     token
@@ -103,3 +110,11 @@ test.each`
     expect(await JWT.verify(token, secret, { algorithm })).toBeFalsy()
     expect(await JWT.verify(token, secret, { algorithm, ignoreNotBefore: true })).toBeTruthy()
 })
+
+test("verify uses a default algorithm if its missing", async () => {
+    const secret = "the-secret";
+    const token = await JWT.sign(validPayload, secret)
+    expect(await JWT.verify(token, secret)).toBeTruthy()
+    expect(await JWT.verify(token, secret, { ignoreExpiration : true })).toBeTruthy()
+    expect(await JWT.verify(token, secret, { ignoreNotBefore : true })).toBeTruthy()
+});

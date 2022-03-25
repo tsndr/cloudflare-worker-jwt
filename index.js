@@ -1,3 +1,5 @@
+const defaultAlgorithm = 'HS256'
+
 class Base64URL {
     static parse(s) {
         return new Uint8Array(Array.prototype.map.call(atob(s.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '')), c => c.charCodeAt(0)))
@@ -53,13 +55,15 @@ class JWT {
             return null
         }
     }
-    async sign(payload, secret, options = { algorithm: 'HS256' }) {
+    async sign(payload, secret, options = { algorithm: defaultAlgorithm }) {
         if (typeof options === 'string')
             options = { algorithm: options }
         if (payload === null || typeof payload !== 'object')
             throw new Error('payload must be an object')
         if (typeof secret !== 'string')
             throw new Error('secret must be a string')
+        if (!options.hasOwnProperty("algorithm"))
+            options.algorithm = defaultAlgorithm
         if (typeof options.algorithm !== 'string')
             throw new Error('options.algorithm must be a string')
         const importAlgorithm = this.algorithms[options.algorithm]
@@ -79,18 +83,20 @@ class JWT {
         const signature = await crypto.subtle.sign(importAlgorithm, key, this._utf8ToUint8Array(partialToken))
         return `${partialToken}.${Base64URL.stringify(new Uint8Array(signature))}`
     }
-    async verify(token, secret, options = { algorithm: 'HS256', ignoreExpiration: false, ignoreNotBefore: false }) {
+    async verify(token, secret, options = { algorithm: defaultAlgorithm, ignoreExpiration: false, ignoreNotBefore: false }) {
         if (typeof options === 'string')
             options = { algorithm: options }
         if (typeof token !== 'string')
             throw new Error('token must be a string')
         if (typeof secret !== 'string')
             throw new Error('secret must be a string')
+        if (!options.hasOwnProperty('algorithm'))
+            options.algorithm = defaultAlgorithm
         if (typeof options.algorithm !== 'string')
             throw new Error('options.algorithm must be a string')
-        if (typeof options.ignoreExpiration === "undefined")
+        if (!options.hasOwnProperty('ignoreExpiration'))
             options.ignoreExpiration = false
-        if (typeof options.ignoreNotBefore === "undefined")
+        if (!options.hasOwnProperty('ignoreNotBefore'))
             options.ignoreNotBefore = false
         if (typeof options.ignoreExpiration !== "boolean")
             throw new Error('options.ignoreExpiration must be a boolean')
