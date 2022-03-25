@@ -2,6 +2,9 @@
   "name": "@tsndr/cloudflare-worker-jwt",
   "version": "1.1.6",
   "description": "A lightweight JWT implementation with ZERO dependencies for Cloudflare Worker",
+  "scripts": {
+      "test": "npx jest"
+  },
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -19,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/tsndr/cloudflare-worker-jwt/issues"
   },
-  "homepage": "https://github.com/tsndr/cloudflare-worker-jwt#readme"
+  "homepage": "https://github.com/tsndr/cloudflare-worker-jwt#readme",
+  "devDependencies": {
+    "jest": "^27.5.1"
+  }
 }

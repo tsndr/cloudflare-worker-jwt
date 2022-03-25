@@ -65,7 +65,7 @@ class JWT {
         const importAlgorithm = this.algorithms[options.algorithm]
         if (!importAlgorithm)
             throw new Error('algorithm not found')
-        payload.iat = Math.floor(Date.now() / 1000)
+        payload.iat = payload.iat || Math.floor(Date.now() / 1000)
         const payloadAsJSON = JSON.stringify(payload)
         const partialToken = `${Base64URL.stringify(this._utf8ToUint8Array(JSON.stringify({ alg: options.algorithm, kid: options.keyid })))}.${Base64URL.stringify(this._utf8ToUint8Array(payloadAsJSON))}`
         let keyFormat = 'raw'
@@ -79,7 +79,7 @@ class JWT {
         const signature = await crypto.subtle.sign(importAlgorithm, key, this._utf8ToUint8Array(partialToken))
         return `${partialToken}.${Base64URL.stringify(new Uint8Array(signature))}`
     }
-    async verify(token, secret, options = { algorithm: 'HS256' }) {
+    async verify(token, secret, options = { algorithm: 'HS256', ignoreExpiration: false, ignoreNotBefore: false }) {
         if (typeof options === 'string')
             options = { algorithm: options }
         if (typeof token !== 'string')
@@ -88,6 +88,14 @@ class JWT {
             throw new Error('secret must be a string')
         if (typeof options.algorithm !== 'string')
             throw new Error('options.algorithm must be a string')
+        if (typeof options.ignoreExpiration === "undefined")
+            options.ignoreExpiration = false
+        if (typeof options.ignoreNotBefore === "undefined")
+            options.ignoreNotBefore = false
+        if (typeof options.ignoreExpiration !== "boolean")
+            throw new Error('options.ignoreExpiration must be a boolean')
+        if (typeof options.ignoreNotBefore !== "boolean")
+            throw new Error('options.ignoreNotBefore must be a boolean')
         const tokenParts = token.split('.')
         if (tokenParts.length !== 3)
             throw new Error('token must consist of 3 parts')
@@ -95,9 +103,9 @@ class JWT {
         if (!importAlgorithm)
             throw new Error('algorithm not found')
         const payload = this.decode(token)
-        if (payload.nbf && payload.nbf >= Math.floor(Date.now() / 1000))
+        if (!options.ignoreNotBefore && payload.nbf && payload.nbf >= Math.floor(Date.now() / 1000))
             return false
-        if (payload.exp && payload.exp < Math.floor(Date.now() / 1000))
+        if (!options.ignoreExpiration && payload.exp && payload.exp < Math.floor(Date.now() / 1000))
             return false
         let keyFormat = 'raw'
         let keyData
