@@ -95,9 +95,9 @@ class JWT {
         if (!importAlgorithm)
             throw new Error('algorithm not found')
         const payload = this.decode(token)
-        if (payload.nbf && payload.nbf >= Math.floor(Date.now() / 1000))
+        if (payload.nbf && payload.nbf > Math.floor(Date.now() / 1000))
             return false
-        if (payload.exp && payload.exp < Math.floor(Date.now() / 1000))
+        if (payload.exp && payload.exp <= Math.floor(Date.now() / 1000))
             return false
         let keyFormat = 'raw'
         let keyData
