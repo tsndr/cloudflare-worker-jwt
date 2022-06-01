@@ -79,7 +79,7 @@ class JWT {
         const signature = await crypto.subtle.sign(importAlgorithm, key, this._utf8ToUint8Array(partialToken))
         return `${partialToken}.${Base64URL.stringify(new Uint8Array(signature))}`
     }
-    async verify(token, secret, options = { algorithm: 'HS256' }) {
+    async verify(token, secret, options = { algorithm: 'HS256', throwError: false }) {
         if (typeof options === 'string')
             options = { algorithm: options }
         if (typeof token !== 'string')
@@ -95,10 +95,16 @@ class JWT {
         if (!importAlgorithm)
             throw new Error('algorithm not found')
         const payload = this.decode(token)
-        if (payload.nbf && payload.nbf > Math.floor(Date.now() / 1000))
+        if (payload.nbf && payload.nbf > Math.floor(Date.now() / 1000)) {
+            if (options.throwError)
+                throw 'NOT_YET_VALID'
             return false
-        if (payload.exp && payload.exp <= Math.floor(Date.now() / 1000))
+        }
+        if (payload.exp && payload.exp <= Math.floor(Date.now() / 1000)) {
+            if (options.throwError)
+                throw 'EXPIRED'
             return false
+        }
         let keyFormat = 'raw'
         let keyData
         if (secret.startsWith('-----BEGIN')) {
