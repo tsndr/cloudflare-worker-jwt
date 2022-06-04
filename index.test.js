@@ -115,12 +115,14 @@ test.each(Object.entries(secrets))(`Self test: %s`, async (algorithm, key) => {
         privateKey = key.private
         publicKey = key.public
     }
+    
     const token = await JWT.sign(testPayload, privateKey, { algorithm })
     expect(token).toMatch(/^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+$/)
+    
     const verified = await JWT.verify(token, publicKey, { algorithm })
     expect(verified).toBeTruthy()
-    const payload = JWT.decode(token)
-    expect(payload).toBeTruthy()
+    
+    const { payload } = JWT.decode(token)
     expect({
         sub: payload.sub,
         name: payload.name
@@ -151,9 +153,11 @@ test.each(Object.entries(externalTokens))('Verify external tokens: %s', async (a
         privateKey = key.private
         publicKey = key.public
     }
+    
     const verified = await JWT.verify(token, publicKey, { algorithm })
     expect(verified).toBeTruthy()
-    const payload = JWT.decode(token)
+
+    const { payload } = JWT.decode(token)
     expect({
         sub: payload.sub,
         name: payload.name

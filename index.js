@@ -116,7 +116,10 @@ class JWT {
         return await crypto.subtle.verify(importAlgorithm, key, Base64URL.parse(tokenParts[2]), this._utf8ToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`))
     }
     decode(token) {
-        return this._decodePayload(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+        return {
+            header: this._decodePayload(token.split('.')[0].replace(/-/g, '+').replace(/_/g, '/')),
+            payload: this._decodePayload(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+        }
     }
 }
 
