@@ -113,7 +113,7 @@ class JWT {
         } else
             keyData = this._utf8ToUint8Array(secret)
         const key = await crypto.subtle.importKey(keyFormat, keyData, importAlgorithm, false, ['verify'])
-        return await crypto.subtle.verify(importAlgorithm, key, Base64URL.parse(tokenParts[2]), `${tokenParts[0]}.${tokenParts[1]}`)
+        return await crypto.subtle.verify(importAlgorithm, key, Base64URL.parse(tokenParts[2]), this._utf8ToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`))
     }
     decode(token) {
         return this._decodePayload(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
