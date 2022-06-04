@@ -14,7 +14,7 @@ class JWT {
         this.algorithms = {
             ES256: { name: 'ECDSA', namedCurve: 'P-256', hash: { name: 'SHA-256' } },
             ES384: { name: 'ECDSA', namedCurve: 'P-384', hash: { name: 'SHA-384' } },
-            ES512: { name: 'ECDSA', namedCurve: 'P-512', hash: { name: 'SHA-512' } },
+            ES512: { name: 'ECDSA', namedCurve: 'P-521', hash: { name: 'SHA-512' } },
             HS256: { name: 'HMAC', hash: { name: 'SHA-256' } },
             HS384: { name: 'HMAC', hash: { name: 'SHA-384' } },
             HS512: { name: 'HMAC', hash: { name: 'SHA-512' } },
@@ -108,13 +108,12 @@ class JWT {
         let keyFormat = 'raw'
         let keyData
         if (secret.startsWith('-----BEGIN')) {
-            keyFormat = 'pkcs8'
+            keyFormat = 'spki'
             keyData = this._str2ab(atob(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, '')))
         } else
             keyData = this._utf8ToUint8Array(secret)
-        const key = await crypto.subtle.importKey(keyFormat, keyData, importAlgorithm, false, ['sign'])
-        const res = await crypto.subtle.sign(importAlgorithm, key, this._utf8ToUint8Array(tokenParts.slice(0, 2).join('.')))
-        return Base64URL.stringify(new Uint8Array(res)) === tokenParts[2]
+        const key = await crypto.subtle.importKey(keyFormat, keyData, importAlgorithm, false, ['verify'])
+        return await crypto.subtle.verify(importAlgorithm, key, Base64URL.parse(tokenParts[2]), `${tokenParts[0]}.${tokenParts[1]}`)
     }
     decode(token) {
         return this._decodePayload(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
