@@ -8,6 +8,9 @@ A lightweight JWT implementation with ZERO dependencies for Cloudflare Workers.
 - [Install](#install)
 - [Examples](#examples)
 - [Usage](#usage)
+    - [Sign](#sign)
+    - [Verify](#verify)
+    - [Decode](#decode)
 
 
 ## Install
