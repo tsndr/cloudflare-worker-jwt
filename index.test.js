@@ -1,4 +1,4 @@
-const { subtle } = require('crypto').webcrypto
+const { subtle } = require('node:crypto').webcrypto
 Object.defineProperty(global, 'crypto', {
     value: { subtle }
 })
