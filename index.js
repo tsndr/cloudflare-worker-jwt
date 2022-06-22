@@ -56,6 +56,7 @@ class JWT {
     async sign(payload, secret, options = { algorithm: 'HS256', header: { typ: 'JWT' } }) {
         if (typeof options === 'string')
             options = { algorithm: options, header: { typ: 'JWT' } }
+        options = { algorithm: 'HS256', header: { typ: 'JWT' }, ...options }
         if (payload === null || typeof payload !== 'object')
             throw new Error('payload must be an object')
         if (typeof secret !== 'string')
@@ -82,6 +83,7 @@ class JWT {
     async verify(token, secret, options = { algorithm: 'HS256', throwError: false }) {
         if (typeof options === 'string')
             options = { algorithm: options }
+        options = { algorithm: 'HS256', throwError: false, ...options }
         if (typeof token !== 'string')
             throw new Error('token must be a string')
         if (typeof secret !== 'string')
