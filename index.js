@@ -94,7 +94,7 @@ class JWT {
         const importAlgorithm = this.algorithms[options.algorithm]
         if (!importAlgorithm)
             throw new Error('algorithm not found')
-        const payload = this.decode(token)
+        const { payload } = this.decode(token)
         if (payload.nbf && payload.nbf > Math.floor(Date.now() / 1000)) {
             if (options.throwError)
                 throw 'NOT_YET_VALID'
