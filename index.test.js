@@ -3,14 +3,25 @@ Object.defineProperty(global, 'crypto', {
     value: { subtle }
 })
 
-const jwt = require('./index.js').default
+const jwt = require('./index.js')
 const oneDay = (60 * 60 * 24)
 const now = Date.now() / 1000
+const algorithms = [
+    'ES256',
+    'ES384',
+    'ES512',
+    'HS256',
+    'HS384',
+    'HS512',
+    'RS256',
+    'RS384',
+    'RS512'
+]
 
 const secrets = {}
 
 // Keypairs
-for (const algorithm of Object.keys(jwt.algorithms)) {
+for (const algorithm of algorithms) {
     if (algorithm.startsWith('HS'))
         secrets[algorithm] = 'secret'
     else if (algorithm.startsWith('RS')) {
