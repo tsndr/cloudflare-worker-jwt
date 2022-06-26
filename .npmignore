@@ -1,0 +1,5 @@
+.github/
+src/
+test/
+.nvmrc
+tsconfig.json
