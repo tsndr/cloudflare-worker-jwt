@@ -2,29 +2,25 @@ name: Publish
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
-  publish-npm:
+  publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 16
           registry-url: https://registry.npmjs.org/
-      - run: npm publish --access public
+      - name: Publish to npmjs
+        run: npm publish --tag latest --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-
-  publish-gpr:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
-          node-version: 12
           registry-url: https://npm.pkg.github.com/
-      - run: npm publish --access public
+      - name: Publish to GPR
+        run: npm publish --tag latest --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
