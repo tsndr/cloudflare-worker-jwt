@@ -3,8 +3,10 @@
   "version": "1.4.4",
   "description": "A lightweight JWT implementation with ZERO dependencies for Cloudflare Worker",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
-      "test": "jest"
+    "build": "tsc",
+    "test": "ts-jest"
   },
   "repository": {
     "type": "git",
@@ -24,6 +26,7 @@
   },
   "homepage": "https://github.com/tsndr/cloudflare-worker-jwt#readme",
   "devDependencies": {
-    "jest": "^28.1.0"
+    "@cloudflare/workers-types": "^3.13.0",
+    "typescript": "^4.7.4"
   }
 }
