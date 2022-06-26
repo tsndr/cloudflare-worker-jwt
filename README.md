@@ -24,9 +24,9 @@ npm i -D @tsndr/cloudflare-worker-jwt
 
 ### Basic Example
 
-```javascript
+```typescript
 async () => {
-    const jwt = require('@tsndr/cloudflare-worker-jwt')
+    import jwt from '@tsndr/cloudflare-worker-jwt'
 
     // Creating a token
     const token = await jwt.sign({ name: 'John Doe', email: 'john.doe@gmail.com' }, 'secret')
@@ -45,9 +45,9 @@ async () => {
 
 ### Restrict Timeframe
 
-```javascript
+```typescript
 async () => {
-    const jwt = require('@tsndr/cloudflare-worker-jwt')
+    import jwt from '@tsndr/cloudflare-worker-jwt'
 
     // Creating a token
     const token = await jwt.sign({
