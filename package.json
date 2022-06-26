@@ -6,7 +6,7 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "ts-jest"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
   "homepage": "https://github.com/tsndr/cloudflare-worker-jwt#readme",
   "devDependencies": {
     "@cloudflare/workers-types": "^3.13.0",
+    "jest": "^28.1.1",
     "typescript": "^4.7.4"
   }
 }
