@@ -1,3 +1,7 @@
+interface JwtAlgorithms {
+    [key: string]: SubtleCryptoImportKeyAlgorithm
+}
+
 enum JwtAlgorithm {
     ES256 = 'ES256',
     ES384 = 'ES384',
@@ -8,10 +12,6 @@ enum JwtAlgorithm {
     RS256 = 'RS256',
     RS384 = 'RS384',
     RS512 = 'RS512'
-}
-
-interface JwtImportAlgorithms {
-    [key: string]: SubtleCryptoImportKeyAlgorithm
 }
 
 interface JwtHeader {
@@ -32,7 +32,7 @@ interface JwtPayload {
 
 /**
  * @typedef JwtOptions
- * @property {string} algorithm
+ * @property {JwtAlgorithm} algorithm
  */
 interface JwtOptions {
     algorithm: JwtAlgorithm
@@ -55,8 +55,8 @@ interface JwtVerifyOptions extends JwtOptions {
 }
 
 interface JwtData {
-    header: JwtHeader
-    payload: JwtPayload
+    header: JwtHeader | null
+    payload: JwtPayload | null
 }
 
 /**
@@ -86,7 +86,7 @@ interface JwtData {
  */
 class Jwt {
 
-    protected importAlgorithms: JwtImportAlgorithms = {
+    protected algorithms: JwtAlgorithms = {
         ES256: { name: 'ECDSA', namedCurve: 'P-256', hash: { name: 'SHA-256' } },
         ES384: { name: 'ECDSA', namedCurve: 'P-384', hash: { name: 'SHA-384' } },
         ES512: { name: 'ECDSA', namedCurve: 'P-521', hash: { name: 'SHA-512' } },
@@ -131,7 +131,7 @@ class Jwt {
                 throw new Error('Illegal base64url string!')
         }
         try {
-            return JSON.parse(raw)
+            return JSON.parse(decodeURIComponent(escape(atob(raw))))
         } catch {
             return null
         }
@@ -157,8 +157,8 @@ class Jwt {
             throw new Error('secret must be a string')
         if (typeof options.algorithm !== 'string')
             throw new Error('options.algorithm must be a string')
-        const importAlgorithm: SubtleCryptoImportKeyAlgorithm = this.importAlgorithms[options.algorithm]
-        if (!importAlgorithm)
+        const algorithm: SubtleCryptoImportKeyAlgorithm = this.algorithms[options.algorithm]
+        if (!algorithm)
             throw new Error('algorithm not found')
         payload.iat = Math.floor(Date.now() / 1000)
         const payloadAsJSON = JSON.stringify(payload)
@@ -170,8 +170,8 @@ class Jwt {
             keyData = this._str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
         } else
             keyData = this._utf8ToUint8Array(secret)
-        const key = await crypto.subtle.importKey(keyFormat, keyData, importAlgorithm, false, ['sign'])
-        const signature = await crypto.subtle.sign(importAlgorithm, key, this._utf8ToUint8Array(partialToken))
+        const key = await crypto.subtle.importKey(keyFormat, keyData, algorithm, false, ['sign'])
+        const signature = await crypto.subtle.sign(algorithm, key, this._utf8ToUint8Array(partialToken))
         return `${partialToken}.${Base64URL.stringify(new Uint8Array(signature))}`
     }
 
@@ -198,10 +198,15 @@ class Jwt {
         const tokenParts = token.split('.')
         if (tokenParts.length !== 3)
             throw new Error('token must consist of 3 parts')
-        const importAlgorithm: SubtleCryptoImportKeyAlgorithm = this.importAlgorithms[options.algorithm]
-        if (!importAlgorithm)
+        const algorithm: SubtleCryptoImportKeyAlgorithm = this.algorithms[options.algorithm]
+        if (!algorithm)
             throw new Error('algorithm not found')
         const { payload } = this.decode(token)
+        if (!payload) {
+            if (options.throwError)
+                throw 'PARSE_ERROR'
+            return false
+        }
         if (payload.nbf && payload.nbf > Math.floor(Date.now() / 1000)) {
             if (options.throwError)
                 throw 'NOT_YET_VALID'
@@ -219,8 +224,8 @@ class Jwt {
             keyData = this._str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
         } else
             keyData = this._utf8ToUint8Array(secret)
-        const key = await crypto.subtle.importKey(keyFormat, keyData, importAlgorithm, false, ['verify'])
-        return await crypto.subtle.verify(importAlgorithm, key, Base64URL.parse(tokenParts[2]), this._utf8ToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`))
+        const key = await crypto.subtle.importKey(keyFormat, keyData, algorithm, false, ['verify'])
+        return await crypto.subtle.verify(algorithm, key, Base64URL.parse(tokenParts[2]), this._utf8ToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`))
     }
 
     /**
