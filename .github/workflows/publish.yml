@@ -13,6 +13,10 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
       - name: Publish to npmjs
         run: npm publish --tag latest --access public
         env:
