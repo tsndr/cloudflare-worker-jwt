@@ -142,3 +142,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Custom
+/index.js
+/index.d.ts
