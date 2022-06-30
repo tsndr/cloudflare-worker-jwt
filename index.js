@@ -22,7 +22,6 @@ class JWT {
             RS384: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-384' } },
             RS512: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-512' } },
         }
-        this.base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
     }
     _utf8ToUint8Array(str) {
         return Base64URL.parse(btoa(unescape(encodeURIComponent(str))))
@@ -74,13 +73,8 @@ class JWT {
         if (secret.startsWith('-----BEGIN')) {
             keyFormat = 'pkcs8'
             keyData = this._str2ab(atob(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, '')))
-        } else {
-            if (this.base64regex.test(secret)) {
-                keyData = Base64URL.parse(secret);
-            } else {
-                keyData = this._utf8ToUint8Array(secret);
-            }
-        }
+        } else
+            keyData = this._utf8ToUint8Array(secret)
         const key = await crypto.subtle.importKey(keyFormat, keyData, importAlgorithm, false, ['sign'])
         const signature = await crypto.subtle.sign(importAlgorithm, key, this._utf8ToUint8Array(partialToken))
         return `${partialToken}.${Base64URL.stringify(new Uint8Array(signature))}`
@@ -116,13 +110,8 @@ class JWT {
         if (secret.startsWith('-----BEGIN')) {
             keyFormat = 'spki'
             keyData = this._str2ab(atob(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, '')))
-        } else {
-            if (this.base64regex.test(secret)) {
-                keyData = Base64URL.parse(secret);
-            } else {
-                keyData = this._utf8ToUint8Array(secret);
-            }
-        }
+        } else
+            keyData = this._utf8ToUint8Array(secret)
         const key = await crypto.subtle.importKey(keyFormat, keyData, importAlgorithm, false, ['verify'])
         return await crypto.subtle.verify(importAlgorithm, key, Base64URL.parse(tokenParts[2]), this._utf8ToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`))
     }
