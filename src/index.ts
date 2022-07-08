@@ -5,12 +5,12 @@ if (typeof crypto === 'undefined' || !crypto.subtle)
  * @typedef JwtAlgorithm
  * @type {'ES256'|'ES384'|'ES512'|'HS256'|'HS384'|'HS512'|'RS256'|'RS384'|'RS512'}
  */
-type JwtAlgorithm = 'ES256'|'ES384'|'ES512'|'HS256'|'HS384'|'HS512'|'RS256'|'RS384'|'RS512'
+export type JwtAlgorithm = 'ES256'|'ES384'|'ES512'|'HS256'|'HS384'|'HS512'|'RS256'|'RS384'|'RS512'
 
 /**
  * @typedef JwtAlgorithms
  */
-interface JwtAlgorithms {
+export interface JwtAlgorithms {
     [key: string]: SubtleCryptoImportKeyAlgorithm
 }
 
@@ -18,7 +18,7 @@ interface JwtAlgorithms {
  * @typedef JwtHeader
  * @prop {string} [typ] Type
  */
-interface JwtHeader {
+export interface JwtHeader {
     /**
      * Type (default: `"JWT"`)
      * 
@@ -39,7 +39,7 @@ interface JwtHeader {
  * @prop {string} [iat] Issued At
  * @prop {string} [jti] JWT ID
  */
-interface JwtPayload {
+export interface JwtPayload {
     /** Issuer */
     iss?: string
     
@@ -68,7 +68,7 @@ interface JwtPayload {
  * @typedef JwtOptions
  * @prop {JwtAlgorithm | string} algorithm
  */
-interface JwtOptions {
+export interface JwtOptions {
     algorithm?: JwtAlgorithm | string
 }
 
@@ -77,7 +77,7 @@ interface JwtOptions {
  * @extends JwtOptions
  * @prop {JwtHeader} [header]
  */
-interface JwtSignOptions extends JwtOptions {
+export interface JwtSignOptions extends JwtOptions {
     header?: JwtHeader
 }
 
@@ -86,7 +86,7 @@ interface JwtSignOptions extends JwtOptions {
  * @extends JwtOptions
  * @prop {boolean} [throwError=false] If `true` throw error if checks fail. (default: `false`)
  */
-interface JwtVerifyOptions extends JwtOptions {
+export interface JwtVerifyOptions extends JwtOptions {
     /**
      * If `true` throw error if checks fail. (default: `false`)
      * 
@@ -100,7 +100,7 @@ interface JwtVerifyOptions extends JwtOptions {
  * @prop {JwtHeader} header
  * @prop {JwtPayload} payload
  */
-interface JwtData {
+export interface JwtData {
     header: JwtHeader
     payload: JwtPayload
 }
