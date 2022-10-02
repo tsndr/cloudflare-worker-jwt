@@ -42,7 +42,7 @@ export interface JwtHeader {
 export interface JwtPayload {
     /** Issuer */
     iss?: string
-    
+
     /** Subject */
     sub?: string
 
@@ -129,7 +129,16 @@ const algorithms: JwtAlgorithms = {
     RS512: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-512' } }
 }
 
-const base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+function _parseSecret(secret: string): { raw: boolean, key: ArrayBuffer } {
+    if (secret.startsWith('-----BEGIN'))
+        return { raw: false, key: _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, '')) }
+
+    // Check for Base64
+    if (/^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/.test(secret))
+        return { raw: true, key: base64UrlParse(secret) }
+    else
+        return { raw: true, key: _utf8ToUint8Array(secret) }
+}
 
 function _utf8ToUint8Array(str: string): Uint8Array {
     return base64UrlParse(btoa(unescape(encodeURIComponent(str))))
@@ -137,11 +146,14 @@ function _utf8ToUint8Array(str: string): Uint8Array {
 
 function _str2ab(str: string): ArrayBuffer {
     str = atob(str)
+
     const buf = new ArrayBuffer(str.length);
     const bufView = new Uint8Array(buf);
+
     for (let i = 0, strLen = str.length; i < strLen; i++) {
         bufView[i] = str.charCodeAt(i);
     }
+
     return buf;
 }
 
@@ -158,6 +170,7 @@ function _decodePayload(raw: string): JwtHeader | JwtPayload | null {
         default:
             throw new Error('Illegal base64url string!')
     }
+
     try {
         return JSON.parse(decodeURIComponent(escape(atob(raw))))
     } catch {
@@ -177,33 +190,32 @@ function _decodePayload(raw: string): JwtHeader | JwtPayload | null {
 export async function sign(payload: JwtPayload, secret: string, options: JwtSignOptions | JwtAlgorithm = { algorithm: 'HS256', header: { typ: 'JWT' } }): Promise<string> {
     if (typeof options === 'string')
         options = { algorithm: options, header: { typ: 'JWT' } }
+
     options = { algorithm: 'HS256', header: { typ: 'JWT' }, ...options }
+
     if (payload === null || typeof payload !== 'object')
         throw new Error('payload must be an object')
+
     if (typeof secret !== 'string')
         throw new Error('secret must be a string')
+
     if (typeof options.algorithm !== 'string')
         throw new Error('options.algorithm must be a string')
+
     const algorithm: SubtleCryptoImportKeyAlgorithm = algorithms[options.algorithm]
+
     if (!algorithm)
         throw new Error('algorithm not found')
+
     payload.iat = Math.floor(Date.now() / 1000)
+
     const payloadAsJSON = JSON.stringify(payload)
     const partialToken = `${base64UrlStringify(_utf8ToUint8Array(JSON.stringify({ ...options.header, alg: options.algorithm })))}.${base64UrlStringify(_utf8ToUint8Array(payloadAsJSON))}`
-    let keyFormat = 'raw'
-    let keyData
-    if (secret.startsWith('-----BEGIN')) {
-        keyFormat = 'pkcs8'
-        keyData = _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
-    } else{
-        if (base64regex.test(secret)) {
-            keyData = base64UrlParse(secret)
-        } else {
-            keyData = _utf8ToUint8Array(secret)
-        }
-    }
-    const key = await crypto.subtle.importKey(keyFormat, keyData, algorithm, false, ['sign'])
+    const parsedSecret = _parseSecret(secret)
+
+    const key = await crypto.subtle.importKey(parsedSecret.raw ? 'raw' : 'pkcs8', parsedSecret.key, algorithm, false, ['sign'])
     const signature = await crypto.subtle.sign(algorithm, key, _utf8ToUint8Array(partialToken))
+
     return `${partialToken}.${base64UrlStringify(new Uint8Array(signature))}`
 }
 
@@ -219,49 +231,55 @@ export async function sign(payload: JwtPayload, secret: string, options: JwtSign
 export async function verify(token: string, secret: string, options: JwtVerifyOptions | JwtAlgorithm = { algorithm: 'HS256', throwError: false }): Promise<boolean> {
     if (typeof options === 'string')
         options = { algorithm: options, throwError: false }
+
     options = { algorithm: 'HS256', throwError: false, ...options }
+
     if (typeof token !== 'string')
         throw new Error('token must be a string')
+
     if (typeof secret !== 'string')
         throw new Error('secret must be a string')
+
     if (typeof options.algorithm !== 'string')
         throw new Error('options.algorithm must be a string')
+
     const tokenParts = token.split('.')
+
     if (tokenParts.length !== 3)
         throw new Error('token must consist of 3 parts')
+
     const algorithm: SubtleCryptoImportKeyAlgorithm = algorithms[options.algorithm]
+
     if (!algorithm)
         throw new Error('algorithm not found')
+
     const { payload } = decode(token)
+
     if (!payload) {
         if (options.throwError)
             throw 'PARSE_ERROR'
+
         return false
     }
+
     if (payload.nbf && payload.nbf > Math.floor(Date.now() / 1000)) {
         if (options.throwError)
             throw 'NOT_YET_VALID'
+
         return false
     }
+
     if (payload.exp && payload.exp <= Math.floor(Date.now() / 1000)) {
         if (options.throwError)
             throw 'EXPIRED'
+
         return false
     }
-    let keyFormat = 'raw'
-    let keyData
-    if (secret.startsWith('-----BEGIN')) {
-        keyFormat = 'spki'
-        keyData = _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
-    } else{
-        if (base64regex.test(secret)) {
-            keyData = base64UrlParse(secret)
-        } else {
-            keyData = _utf8ToUint8Array(secret)
-        }
-    }
-    const key = await crypto.subtle.importKey(keyFormat, keyData, algorithm, false, ['verify'])
-    return await crypto.subtle.verify(algorithm, key, base64UrlParse(tokenParts[2]), _utf8ToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`))
+
+    const parsedSecret = _parseSecret(secret)
+    const key = await crypto.subtle.importKey(parsedSecret.raw ? 'raw' : 'spki', parsedSecret.key, algorithm, false, ['verify'])
+
+    return crypto.subtle.verify(algorithm, key, base64UrlParse(tokenParts[2]), _utf8ToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`))
 }
 
 /**

@@ -22,9 +22,10 @@ const secrets = {}
 
 // Keypairs
 for (const algorithm of algorithms) {
-    if (algorithm.startsWith('HS'))
+    if (algorithm.startsWith('HS')) {
+        //secrets[algorithm] = 'c2VjcmV0'
         secrets[algorithm] = 'secret'
-    else if (algorithm.startsWith('RS')) {
+    } else if (algorithm.startsWith('RS')) {
         secrets[algorithm] = {
             public: `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu1SU1LfVLPHCozMxH2Mo
@@ -122,17 +123,18 @@ const testPayload = {
 test.each(Object.entries(secrets))(`Self test: %s`, async (algorithm, key) => {
     let privateKey = key
     let publicKey = key
+
     if (typeof key === 'object') {
         privateKey = key.private
         publicKey = key.public
     }
-    
+
     const token = await jwt.sign(testPayload, privateKey, { algorithm })
     expect(token).toMatch(/^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+$/)
-    
+
     const verified = await jwt.verify(token, publicKey, { algorithm })
     expect(verified).toBeTruthy()
-    
+
     const { payload } = jwt.decode(token)
     expect({
         sub: payload.sub,
@@ -158,13 +160,12 @@ const externalTokens = {
 
 test.each(Object.entries(externalTokens))('Verify external tokens: %s', async (algorithm, token) => {
     const key = secrets[algorithm]
-    let privateKey = key
+
     let publicKey = key
-    if (typeof key === 'object') {
-        privateKey = key.private
+
+    if (typeof key === 'object')
         publicKey = key.public
-    }
-    
+
     const verified = await jwt.verify(token, publicKey, { algorithm })
     expect(verified).toBeTruthy()
 
