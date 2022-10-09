@@ -129,17 +129,6 @@ const algorithms: JwtAlgorithms = {
     RS512: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-512' } }
 }
 
-function _parseSecret(secret: string): { raw: boolean, key: ArrayBuffer } {
-    if (secret.startsWith('-----BEGIN'))
-        return { raw: false, key: _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, '')) }
-
-    // Check for Base64
-    if (/^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/.test(secret))
-        return { raw: true, key: base64UrlParse(secret) }
-    else
-        return { raw: true, key: _utf8ToUint8Array(secret) }
-}
-
 function _utf8ToUint8Array(str: string): Uint8Array {
     return base64UrlParse(btoa(unescape(encodeURIComponent(str))))
 }
@@ -211,9 +200,14 @@ export async function sign(payload: JwtPayload, secret: string, options: JwtSign
 
     const payloadAsJSON = JSON.stringify(payload)
     const partialToken = `${base64UrlStringify(_utf8ToUint8Array(JSON.stringify({ ...options.header, alg: options.algorithm })))}.${base64UrlStringify(_utf8ToUint8Array(payloadAsJSON))}`
-    const parsedSecret = _parseSecret(secret)
-
-    const key = await crypto.subtle.importKey(parsedSecret.raw ? 'raw' : 'pkcs8', parsedSecret.key, algorithm, false, ['sign'])
+    let keyFormat = 'raw'
+    let keyData
+    if (secret.startsWith('-----BEGIN')) {
+        keyFormat = 'pkcs8'
+        keyData = _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
+    } else
+        keyData = _utf8ToUint8Array(secret)
+    const key = await crypto.subtle.importKey(keyFormat, keyData, algorithm, false, ['sign'])
     const signature = await crypto.subtle.sign(algorithm, key, _utf8ToUint8Array(partialToken))
 
     return `${partialToken}.${base64UrlStringify(new Uint8Array(signature))}`
@@ -275,11 +269,15 @@ export async function verify(token: string, secret: string, options: JwtVerifyOp
 
         return false
     }
-
-    const parsedSecret = _parseSecret(secret)
-    const key = await crypto.subtle.importKey(parsedSecret.raw ? 'raw' : 'spki', parsedSecret.key, algorithm, false, ['verify'])
-
-    return crypto.subtle.verify(algorithm, key, base64UrlParse(tokenParts[2]), _utf8ToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`))
+    let keyFormat = 'raw'
+    let keyData
+    if (secret.startsWith('-----BEGIN')) {
+        keyFormat = 'spki'
+        keyData = _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
+    } else
+        keyData = _utf8ToUint8Array(secret)
+    const key = await crypto.subtle.importKey(keyFormat, keyData, algorithm, false, ['verify'])
+    return await crypto.subtle.verify(algorithm, key, base64UrlParse(tokenParts[2]), _utf8ToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`))
 }
 
 /**
