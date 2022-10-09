@@ -1,6 +1,6 @@
 {
   "name": "@tsndr/cloudflare-worker-jwt",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A lightweight JWT implementation with ZERO dependencies for Cloudflare Worker",
   "main": "index.js",
   "types": "index.d.ts",
