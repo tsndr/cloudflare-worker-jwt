@@ -16,7 +16,7 @@ A lightweight JWT implementation with ZERO dependencies for Cloudflare Workers.
 ## Install
 
 ```
-npm i -D @tsndr/cloudflare-worker-jwt
+npm i @tsndr/cloudflare-worker-jwt
 ```
 
 
