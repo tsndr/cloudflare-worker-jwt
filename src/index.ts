@@ -185,9 +185,6 @@ export async function sign(payload: JwtPayload, secret: string, options: JwtSign
     if (payload === null || typeof payload !== 'object')
         throw new Error('payload must be an object')
 
-    if (typeof secret !== 'string')
-        throw new Error('secret must be a string')
-
     if (typeof options.algorithm !== 'string')
         throw new Error('options.algorithm must be a string')
 
@@ -202,7 +199,11 @@ export async function sign(payload: JwtPayload, secret: string, options: JwtSign
     const partialToken = `${base64UrlStringify(_utf8ToUint8Array(JSON.stringify({ ...options.header, alg: options.algorithm })))}.${base64UrlStringify(_utf8ToUint8Array(payloadAsJSON))}`
     let keyFormat = 'raw'
     let keyData
-    if (secret.startsWith('-----BEGIN')) {
+    if (typeof secret === 'object') {
+        keyFormat = 'jwk';
+        keyData = secret;
+    }
+    else if (secret.startsWith('-----BEGIN')) {
         keyFormat = 'pkcs8'
         keyData = _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
     } else
@@ -230,9 +231,6 @@ export async function verify(token: string, secret: string, options: JwtVerifyOp
 
     if (typeof token !== 'string')
         throw new Error('token must be a string')
-
-    if (typeof secret !== 'string')
-        throw new Error('secret must be a string')
 
     if (typeof options.algorithm !== 'string')
         throw new Error('options.algorithm must be a string')
@@ -271,7 +269,11 @@ export async function verify(token: string, secret: string, options: JwtVerifyOp
     }
     let keyFormat = 'raw'
     let keyData
-    if (secret.startsWith('-----BEGIN')) {
+    if (typeof secret === 'object') {
+        keyFormat = 'jwk';
+        keyData = secret;
+    }
+    else if (secret.startsWith('-----BEGIN')) {
         keyFormat = 'spki'
         keyData = _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
     } else
