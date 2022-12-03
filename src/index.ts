@@ -2,6 +2,18 @@ if (typeof crypto === 'undefined' || !crypto.subtle)
     throw new Error('SubtleCrypto not supported!')
 
 /**
+ * @typedef JwkPayload
+ */
+export interface JwkPayload extends Object {
+    "crv": string,
+    "d": string,
+    "ext": boolean,
+    "key_ops": string[],
+    "kty": string,
+    "x": string,
+    "y": string
+};
+/**
  * @typedef JwtAlgorithm
  * @type {'ES256'|'ES384'|'ES512'|'HS256'|'HS384'|'HS512'|'RS256'|'RS384'|'RS512'}
  */
@@ -176,7 +188,7 @@ function _decodePayload(raw: string): JwtHeader | JwtPayload | null {
  * @throws {Error} If there's a validation issue.
  * @returns {Promise<string>} Returns token as a `string`.
  */
-export async function sign(payload: JwtPayload, secret: string, options: JwtSignOptions | JwtAlgorithm = { algorithm: 'HS256', header: { typ: 'JWT' } }): Promise<string> {
+export async function sign(payload: JwtPayload, secret: string | JwkPayload, options: JwtSignOptions | JwtAlgorithm = { algorithm: 'HS256', header: { typ: 'JWT' } }): Promise<string> {
     if (typeof options === 'string')
         options = { algorithm: options, header: { typ: 'JWT' } }
 
@@ -185,8 +197,8 @@ export async function sign(payload: JwtPayload, secret: string, options: JwtSign
     if (payload === null || typeof payload !== 'object')
         throw new Error('payload must be an object')
 
-    if (typeof secret !== 'string')
-        throw new Error('secret must be a string')
+    if (typeof secret !== 'string' && typeof secret !== 'object')
+        throw new Error('secret must be a string or a JWK object')
 
     if (typeof options.algorithm !== 'string')
         throw new Error('options.algorithm must be a string')
@@ -203,7 +215,10 @@ export async function sign(payload: JwtPayload, secret: string, options: JwtSign
     const partialToken = `${base64UrlStringify(_utf8ToUint8Array(JSON.stringify({ ...options.header, alg: options.algorithm })))}.${base64UrlStringify(_utf8ToUint8Array(payloadAsJSON))}`
     let keyFormat = 'raw'
     let keyData
-    if (secret.startsWith('-----BEGIN')) {
+    if (typeof secret === 'object') {
+        keyFormat = 'jwk';
+        keyData = secret;
+    } else if (typeof secret === 'string' && secret.startsWith('-----BEGIN')) {
         keyFormat = 'pkcs8'
         keyData = _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
     } else
@@ -223,7 +238,7 @@ export async function sign(payload: JwtPayload, secret: string, options: JwtSign
  * @throws {Error | string} Throws an error `string` if the token is invalid or an `Error-Object` if there's a validation issue.
  * @returns {Promise<boolean>} Returns `true` if signature, `nbf` (if set) and `exp` (if set) are valid, otherwise returns `false`.
  */
-export async function verify(token: string, secret: string, options: JwtVerifyOptions | JwtAlgorithm = { algorithm: 'HS256', throwError: false }): Promise<boolean> {
+export async function verify(token: string, secret: string | JwkPayload, options: JwtVerifyOptions | JwtAlgorithm = { algorithm: 'HS256', throwError: false }): Promise<boolean> {
     if (typeof options === 'string')
         options = { algorithm: options, throwError: false }
 
@@ -232,8 +247,8 @@ export async function verify(token: string, secret: string, options: JwtVerifyOp
     if (typeof token !== 'string')
         throw new Error('token must be a string')
 
-    if (typeof secret !== 'string')
-        throw new Error('secret must be a string')
+    if (typeof secret !== 'string' && typeof secret !== 'object')
+        throw new Error('secret must be a string or a JWK object')
 
     if (typeof options.algorithm !== 'string')
         throw new Error('options.algorithm must be a string')
@@ -272,8 +287,11 @@ export async function verify(token: string, secret: string, options: JwtVerifyOp
     }
     let keyFormat = 'raw'
     let keyData
-    if (secret.startsWith('-----BEGIN')) {
-        keyFormat = 'spki'
+    if (typeof secret === 'object') {
+        keyFormat = 'jwk';
+        keyData = secret;
+    } else if (typeof secret === 'string' && secret.startsWith('-----BEGIN')) {
+        keyFormat = 'pkcs8'
         keyData = _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
     } else
         keyData = _utf8ToUint8Array(secret)
