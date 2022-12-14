@@ -196,7 +196,8 @@ export async function sign(payload: JwtPayload, secret: string, options: JwtSign
     if (!algorithm)
         throw new Error('algorithm not found')
 
-    payload.iat = Math.floor(Date.now() / 1000)
+    if (!payload.iat)
+        payload.iat = Math.floor(Date.now() / 1000)
 
     const payloadAsJSON = JSON.stringify(payload)
     const partialToken = `${base64UrlStringify(_utf8ToUint8Array(JSON.stringify({ ...options.header, alg: options.algorithm })))}.${base64UrlStringify(_utf8ToUint8Array(payloadAsJSON))}`
