@@ -33,7 +33,7 @@ export interface JwtHeader {
  * @typedef JwtPayload
  * @prop {string} [iss] Issuer
  * @prop {string} [sub] Subject
- * @prop {string} [aud] Audience
+ * @prop {string | string[]} [aud] Audience
  * @prop {string} [exp] Expiration Time
  * @prop {string} [nbf] Not Before
  * @prop {string} [iat] Issued At
@@ -47,7 +47,7 @@ export interface JwtPayload {
     sub?: string
 
     /** Audience */
-    aud?: string
+    aud?: string | string[]
 
     /** Expiration Time */
     exp?: number
