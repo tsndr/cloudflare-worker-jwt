@@ -88,6 +88,11 @@ export interface JwtSignOptions extends JwtOptions {
  */
 export interface JwtVerifyOptions extends JwtOptions {
     /**
+     * If `true` all expiry checks will be skipped
+    */
+    skipValidation?: boolean
+
+    /**
      * If `true` throw error if checks fail. (default: `false`)
      *
      * @default false
@@ -229,11 +234,11 @@ export async function sign(payload: JwtPayload, secret: string | JsonWebKey, opt
  * @throws {Error | string} Throws an error `string` if the token is invalid or an `Error-Object` if there's a validation issue.
  * @returns {Promise<boolean>} Returns `true` if signature, `nbf` (if set) and `exp` (if set) are valid, otherwise returns `false`.
  */
-export async function verify(token: string, secret: string | JsonWebKey, options: JwtVerifyOptions | JwtAlgorithm = { algorithm: 'HS256', throwError: false }): Promise<boolean> {
+export async function verify(token: string, secret: string | JsonWebKey, options: JwtVerifyOptions | JwtAlgorithm = { algorithm: 'HS256', skipValidation: false, throwError: false }): Promise<boolean> {
     if (typeof options === 'string')
         options = { algorithm: options, throwError: false }
 
-    options = { algorithm: 'HS256', throwError: false, ...options }
+    options = { algorithm: 'HS256', skipValidation: false, throwError: false, ...options }
 
     if (typeof token !== 'string')
         throw new Error('token must be a string')
@@ -256,21 +261,21 @@ export async function verify(token: string, secret: string | JsonWebKey, options
 
     const { payload } = decode(token)
 
-    if (!payload) {
+    if (!options.skipValidation && !payload) {
         if (options.throwError)
             throw 'PARSE_ERROR'
 
         return false
     }
 
-    if (payload.nbf && payload.nbf > Math.floor(Date.now() / 1000)) {
+    if (!options.skipValidation && payload.nbf && payload.nbf > Math.floor(Date.now() / 1000)) {
         if (options.throwError)
             throw 'NOT_YET_VALID'
 
         return false
     }
 
-    if (payload.exp && payload.exp <= Math.floor(Date.now() / 1000)) {
+    if (!options.skipValidation && payload.exp && payload.exp <= Math.floor(Date.now() / 1000)) {
         if (options.throwError)
             throw 'EXPIRED'
 
