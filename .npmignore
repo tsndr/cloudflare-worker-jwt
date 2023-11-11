@@ -1,7 +1,9 @@
+.editorconfig
 .github/
+.nvmrc
+index.spec.js
+index.test.js
+jest.config.ts
 src/
 test/
-.nvmrc
-index.test.js
 tsconfig.json
-.editorconfig
