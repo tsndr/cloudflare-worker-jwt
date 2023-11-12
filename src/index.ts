@@ -139,28 +139,20 @@ function byteStringToBytes(byteStr: string): Uint8Array {
 }
 
 function arrayBufferToBase64String(arrayBuffer: ArrayBuffer): string {
-    const byteArray = new Uint8Array(arrayBuffer)
-    const byteStr = bytesToByteString(byteArray)
-    return btoa(byteStr)
+    return btoa(bytesToByteString(new Uint8Array(arrayBuffer)))
 }
 
 function base64StringToArrayBuffer(b64str: string): ArrayBuffer {
-    const byteStr = atob(b64str)
-    const bytes = byteStringToBytes(byteStr)
-    return bytes.buffer
+    return byteStringToBytes(atob(b64str)).buffer
 }
 
 function textToArrayBuffer(str: string): ArrayBuffer {
-    const buf = decodeURI(encodeURIComponent(str)) // 2 bytes for each char
-    const bytes = byteStringToBytes(buf)
-    return bytes
+    return byteStringToBytes(decodeURI(encodeURIComponent(str)))
 }
 
 // @ts-ignore
 function arrayBufferToText(arrayBuffer: ArrayBuffer): string {
-    const byteArray = new Uint8Array(arrayBuffer)
-    const byteStr = bytesToByteString(byteArray)
-    return byteStr
+    return bytesToByteString(new Uint8Array(arrayBuffer))
 }
 
 function arrayBufferToBase64Url(arrayBuffer: ArrayBuffer): string {
@@ -212,23 +204,8 @@ async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImport
 }
 
 function decodePayload(raw: string): JwtHeader | JwtPayload | null {
-    switch (raw.length % 4) {
-        case 0:
-            break
-        case 1:
-            raw += '==='
-            break
-        case 2:
-            raw += '=='
-            break
-        case 3:
-            raw += '='
-            break
-        default:
-            throw new Error('Invalid base64url string!')
-    }
-
     try {
+        raw += '='.repeat(4-(raw.length % 4))
         return JSON.parse(atob(raw))
     } catch {
         return null
