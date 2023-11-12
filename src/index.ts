@@ -110,18 +110,6 @@ export interface JwtData {
     payload: JwtPayload
 }
 
-function base64UrlParse(s: string): Uint8Array {
-    // @ts-ignore
-    return new Uint8Array(Array.prototype.map.call(atob(s.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '')), c => c.charCodeAt(0)))
-    // return new Uint8Array(Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, ''))).map(c => c.charCodeAt(0)))
-}
-
-function base64UrlStringify(a: Uint8Array): string {
-    // @ts-ignore
-    return btoa(String.fromCharCode.apply(0, a)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
-    // return btoa(String.fromCharCode.apply(0, Array.from(a))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
-}
-
 const algorithms: JwtAlgorithms = {
     ES256: { name: 'ECDSA', namedCurve: 'P-256', hash: { name: 'SHA-256' } },
     ES384: { name: 'ECDSA', namedCurve: 'P-384', hash: { name: 'SHA-384' } },
@@ -134,26 +122,101 @@ const algorithms: JwtAlgorithms = {
     RS512: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-512' } }
 }
 
-function _utf8ToUint8Array(str: string): Uint8Array {
-    return base64UrlParse(btoa(unescape(encodeURIComponent(str))))
-}
-
-function _str2ab(str: string): ArrayBuffer {
-    str = atob(str)
-
-    const buf = new ArrayBuffer(str.length);
-    const bufView = new Uint8Array(buf);
-
-    for (let i = 0, strLen = str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
+function bytesToByteString(bytes: Uint8Array): string {
+    let byteStr = ''
+    for (let i = 0; i < bytes.byteLength; i++) {
+        byteStr += String.fromCharCode(bytes[i])
     }
-
-    return buf;
+    return byteStr
 }
 
-function _decodePayload(raw: string): JwtHeader | JwtPayload | null {
+function byteStringToBytes(byteStr: string): Uint8Array {
+    let bytes = new Uint8Array(byteStr.length)
+    for (let i = 0; i < byteStr.length; i++) {
+        bytes[i] = byteStr.charCodeAt(i)
+    }
+    return bytes
+}
+
+function arrayBufferToBase64String(arrayBuffer: ArrayBuffer): string {
+    const byteArray = new Uint8Array(arrayBuffer)
+    const byteStr = bytesToByteString(byteArray)
+    return btoa(byteStr)
+}
+
+function base64StringToArrayBuffer(b64str: string): ArrayBuffer {
+    const byteStr = atob(b64str)
+    const bytes = byteStringToBytes(byteStr)
+    return bytes.buffer
+}
+
+function textToArrayBuffer(str: string): ArrayBuffer {
+    const buf = decodeURI(encodeURIComponent(str)) // 2 bytes for each char
+    const bytes = byteStringToBytes(buf)
+    return bytes
+}
+
+// @ts-ignore
+function arrayBufferToText(arrayBuffer: ArrayBuffer): string {
+    const byteArray = new Uint8Array(arrayBuffer)
+    const byteStr = bytesToByteString(byteArray)
+    return byteStr
+}
+
+function arrayBufferToBase64Url(arrayBuffer: ArrayBuffer): string {
+    return arrayBufferToBase64String(arrayBuffer).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+}
+
+function base64UrlToArrayBuffer(b64url: string): ArrayBuffer {
+    return base64StringToArrayBuffer(b64url.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, ''))
+}
+
+function textToBase64Url(str: string): string {
+    return btoa(str).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+}
+
+function pemToBinary(pem: string): ArrayBuffer {
+    return base64StringToArrayBuffer(pem.replace(/-+(BEGIN|END).*/g, '').replace(/\s/g, ''))
+}
+
+async function importTextSecret(key: string, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
+    return await crypto.subtle.importKey("raw", textToArrayBuffer(key), algorithm, true, ["verify", "sign"])
+}
+
+async function importJwk(key: JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
+    return await crypto.subtle.importKey("jwk", key, algorithm, true, ["verify", "sign"])
+}
+
+async function importPublicKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
+    return await crypto.subtle.importKey("spki", pemToBinary(key), algorithm, true, ["verify"])
+}
+
+async function importPrivateKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
+    return await crypto.subtle.importKey("pkcs8", pemToBinary(key), algorithm, true, ["sign"])
+}
+
+async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
+    if (typeof key === 'object')
+        return importJwk(key, algorithm)
+
+    if (typeof key !== 'string')
+        throw new Error('Unsupported key type!')
+
+    if (key.includes('PUBLIC'))
+        return importPublicKey(key, algorithm)
+
+    if (key.includes('PRIVATE'))
+        return importPrivateKey(key, algorithm)
+
+    return importTextSecret(key, algorithm)
+}
+
+function decodePayload(raw: string): JwtHeader | JwtPayload | null {
     switch (raw.length % 4) {
         case 0:
+            break
+        case 1:
+            raw += '==='
             break
         case 2:
             raw += '=='
@@ -162,67 +225,14 @@ function _decodePayload(raw: string): JwtHeader | JwtPayload | null {
             raw += '='
             break
         default:
-            throw new Error('Illegal base64url string!')
+            throw new Error('Invalid base64url string!')
     }
 
     try {
-        return JSON.parse(decodeURIComponent(escape(atob(raw))))
+        return JSON.parse(atob(raw))
     } catch {
         return null
     }
-}
-
-/**
- * Signs a payload and returns the token
- *
- * @param {JwtPayload} payload The payload object. To use `nbf` (Not Before) and/or `exp` (Expiration Time) add `nbf` and/or `exp` to the payload.
- * @param {string | JsonWebKey} secret A string which is used to sign the payload.
- * @param {JwtSignOptions | JwtAlgorithm | string} [options={ algorithm: 'HS256', header: { typ: 'JWT' } }] The options object or the algorithm.
- * @throws {Error} If there's a validation issue.
- * @returns {Promise<string>} Returns token as a `string`.
- */
-export async function sign(payload: JwtPayload, secret: string | JsonWebKey, options: JwtSignOptions | JwtAlgorithm = { algorithm: 'HS256', header: { typ: 'JWT' } }): Promise<string> {
-    if (typeof options === 'string')
-        options = { algorithm: options, header: { typ: 'JWT' } }
-
-    options = { algorithm: 'HS256', header: { typ: 'JWT' }, ...options }
-
-    if (payload === null || typeof payload !== 'object')
-        throw new Error('payload must be an object')
-
-    if (typeof secret !== 'string' && typeof secret !== 'object')
-        throw new Error('secret must be a string or a JWK object')
-
-    if (typeof options.algorithm !== 'string')
-        throw new Error('options.algorithm must be a string')
-
-    const algorithm: SubtleCryptoImportKeyAlgorithm = algorithms[options.algorithm]
-
-    if (!algorithm)
-        throw new Error('algorithm not found')
-
-    if (!payload.iat)
-        payload.iat = Math.floor(Date.now() / 1000)
-
-    const payloadAsJSON = JSON.stringify(payload)
-    const partialToken = `${base64UrlStringify(_utf8ToUint8Array(JSON.stringify({ ...options.header, alg: options.algorithm })))}.${base64UrlStringify(_utf8ToUint8Array(payloadAsJSON))}`
-
-    let keyFormat = 'raw'
-    let keyData
-
-    if (typeof secret === 'object') {
-        keyFormat = 'jwk'
-        keyData = secret
-    } else if (typeof secret === 'string' && secret.startsWith('-----BEGIN')) {
-        keyFormat = 'pkcs8'
-        keyData = _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
-    } else
-        keyData = _utf8ToUint8Array(secret)
-
-    const key = await crypto.subtle.importKey(keyFormat, keyData, algorithm, false, ['sign'])
-    const signature = await crypto.subtle.sign(algorithm, key, _utf8ToUint8Array(partialToken))
-
-    return `${partialToken}.${base64UrlStringify(new Uint8Array(signature))}`
 }
 
 /**
@@ -281,21 +291,49 @@ export async function verify(token: string, secret: string | JsonWebKey, options
 
         return false
     }
-    let keyFormat = 'raw'
-    let keyData
 
-    if (typeof secret === 'object') {
-        keyFormat = 'jwk';
-        keyData = secret;
-    } else if (typeof secret === 'string' && secret.startsWith('-----BEGIN')) {
-        keyFormat = 'spki'
-        keyData = _str2ab(secret.replace(/-----BEGIN.*?-----/g, '').replace(/-----END.*?-----/g, '').replace(/\s/g, ''))
-    } else
-        keyData = _utf8ToUint8Array(secret)
+    const key = await importKey(secret, algorithm)
 
-    const key = await crypto.subtle.importKey(keyFormat, keyData, algorithm, false, ['verify'])
+    return await crypto.subtle.verify(algorithm, key, base64UrlToArrayBuffer(tokenParts[2]), textToArrayBuffer(`${tokenParts[0]}.${tokenParts[1]}`))
+}
 
-    return await crypto.subtle.verify(algorithm, key, base64UrlParse(tokenParts[2]), _utf8ToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`))
+/**
+ * Signs a payload and returns the token
+ *
+ * @param {JwtPayload} payload The payload object. To use `nbf` (Not Before) and/or `exp` (Expiration Time) add `nbf` and/or `exp` to the payload.
+ * @param {string | JsonWebKey} secret A string which is used to sign the payload.
+ * @param {JwtSignOptions | JwtAlgorithm | string} [options={ algorithm: 'HS256', header: { typ: 'JWT' } }] The options object or the algorithm.
+ * @throws {Error} If there's a validation issue.
+ * @returns {Promise<string>} Returns token as a `string`.
+ */
+export async function sign(payload: JwtPayload, secret: string | JsonWebKey, options: JwtSignOptions | JwtAlgorithm = 'HS256'): Promise<string> {
+    if (typeof options === 'string')
+        options = { algorithm: options }
+    options = { algorithm: 'HS256', header: { typ: 'JWT' }, ...options }
+
+    if (!payload || typeof payload !== 'object')
+        throw new Error('payload must be an object')
+
+    if (!secret || (typeof secret !== 'string' && typeof secret !== 'object'))
+        throw new Error('secret must be a string or a JWK object')
+
+    if (typeof options.algorithm !== 'string')
+        throw new Error('options.algorithm must be a string')
+
+    const algorithm: SubtleCryptoImportKeyAlgorithm = algorithms[options.algorithm]
+
+    if (!algorithm)
+        throw new Error('algorithm not found')
+
+    if (!payload.iat)
+        payload.iat = Math.floor(Date.now() / 1000)
+
+    const partialToken = `${textToBase64Url(JSON.stringify({ ...options.header, alg: options.algorithm }))}.${textToBase64Url(JSON.stringify(payload))}`
+
+    const key = await importKey(secret, algorithm)
+    const signature = await crypto.subtle.sign(algorithm, key, textToArrayBuffer(partialToken))
+
+    return `${partialToken}.${arrayBufferToBase64Url(signature)}`
 }
 
 /**
@@ -306,8 +344,8 @@ export async function verify(token: string, secret: string | JsonWebKey, options
  */
 export function decode(token: string): JwtData {
     return {
-        header: _decodePayload(token.split('.')[0].replace(/-/g, '+').replace(/_/g, '/')) as JwtHeader,
-        payload: _decodePayload(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')) as JwtPayload
+        header: decodePayload(token.split('.')[0].replace(/-/g, '+').replace(/_/g, '/')) as JwtHeader,
+        payload: decodePayload(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')) as JwtPayload
     }
 }
 
