@@ -2,8 +2,12 @@
   "name": "@tsndr/cloudflare-worker-jwt",
   "version": "2.2.9",
   "description": "A lightweight JWT implementation with ZERO dependencies for Cloudflare Worker",
-  "main": "index.js",
+  "type": "module",
+  "exports": "./index.js",
   "types": "index.d.ts",
+  "engine": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest"
