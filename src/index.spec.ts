@@ -14,6 +14,11 @@ type Data = {
     [key in JwtAlgorithm]: Dataset
 }
 
+type Payload = {
+    sub: string
+    name: string
+}
+
 const data: Data = {
     'ES256': {
         public: '-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEVs/o5+uQbTjL3chynL4wXgUg2R9\nq9UU8I5mEovUf86QZ7kOBIjJwqnzD1omageEHWwHdBO6B+dFabmdT9POxg==\n-----END PUBLIC KEY-----',
@@ -63,7 +68,7 @@ const data: Data = {
 
 }
 
-const payload = {
+const payload: Payload = {
     sub: "1234567890",
     name: "John Doe",
 }
@@ -77,7 +82,7 @@ describe.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s', (algorith
     })
 
     test('decode external', async () => {
-        const decoded = jwt.decode(data.token)
+        const decoded = jwt.decode<Payload>(data.token)
         expect({
             sub: payload.sub,
             name: payload.name
@@ -88,7 +93,7 @@ describe.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s', (algorith
     })
 
     test('sign internal', async () => {
-        token = await jwt.sign(payload, data.private, algorithm)
+        token = await jwt.sign<Payload>(payload, data.private, algorithm)
         expect(token).toMatch(/^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+$/)
     })
 
