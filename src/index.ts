@@ -200,7 +200,7 @@ async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImport
 
 function decodePayload<T = any>(raw: string): T | undefined {
     try {
-    return JSON.parse(atob(raw))
+        return JSON.parse(atob(raw))
     } catch {
         return
     }
@@ -280,9 +280,9 @@ export async function verify(token: string, secret: string | JsonWebKey, options
     if (!algorithm)
         throw new Error('algorithm not found')
 
-    try {
-        const { payload } = decode(token)
+    const { payload } = decode(token)
 
+    try {
         if (!payload)
             throw new Error('PARSE_ERROR')
 
