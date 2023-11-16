@@ -82,7 +82,7 @@ describe.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s', (algorith
             sub: payload.sub,
             name: payload.name
         }).toMatchObject({
-            sub: decoded.payload.sub,
+            sub: decoded.payload?.sub,
             name: payload.name
         })
     })
@@ -98,7 +98,7 @@ describe.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s', (algorith
             sub: payload.sub,
             name: payload.name
         }).toMatchObject({
-            sub: decoded.payload.sub,
+            sub: decoded.payload?.sub,
             name: payload.name
         })
     })
