@@ -75,8 +75,8 @@ export type JwtOptions = {
  * @extends JwtOptions
  * @prop {JwtHeader} [header]
  */
-export type JwtSignOptions = {
-    header?: JwtHeader
+export type JwtSignOptions<T> = {
+    header?: JwtHeader<T>
 } & JwtOptions
 
 /**
@@ -213,7 +213,7 @@ function decodePayload<T = any>(raw: string): T | undefined {
  * @throws {Error} If there's a validation issue.
  * @returns {Promise<string>} Returns token as a `string`.
  */
-export async function sign<Payload = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKey, options: JwtSignOptions | JwtAlgorithm = 'HS256'): Promise<string> {
+export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKey, options: JwtSignOptions<Header> | JwtAlgorithm = 'HS256'): Promise<string> {
     if (typeof options === 'string')
         options = { algorithm: options }
 
