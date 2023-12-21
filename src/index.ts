@@ -199,8 +199,8 @@ async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImport
 function decodePayload<T = any>(raw: string): T | undefined {
     try {
         const binaryString = atob(raw)
-        const encodedString = encodeURIComponent(binaryString).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-          return String.fromCharCode('0x' + p1);
+        const encodedString = encodeURIComponent(binaryString).replace(/%([0-9A-F]{2})/g, (_match, p1) => {
+          return String.fromCharCode(parseInt(p1, 16));
         });
 
         return JSON.parse(decodeURIComponent(encodedString));
