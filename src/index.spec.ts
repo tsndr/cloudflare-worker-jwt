@@ -73,6 +73,11 @@ const payload: Payload = {
     name: "John Doe",
 }
 
+const unicodePayload: Payload = {
+    sub: "1234567890",
+    name: "John Doe 😎",
+}
+
 describe.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s', (algorithm, data) => {
     let token = ''
 
@@ -94,6 +99,11 @@ describe.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s', (algorith
 
     test('sign internal', async () => {
         token = await jwt.sign<Payload>(payload, data.private, algorithm)
+        expect(token).toMatch(/^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+$/)
+    })
+
+    test('sign unciode', async () => {
+        token = await jwt.sign<Payload>(unicodePayload, data.private, algorithm)
         expect(token).toMatch(/^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+$/)
     })
 
