@@ -157,7 +157,10 @@ function base64UrlToArrayBuffer(b64url: string): ArrayBuffer {
 }
 
 function textToBase64Url(str: string): string {
-    return btoa(str).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+    const encoder = new TextEncoder();
+    const charCodes = encoder.encode(str);
+    const binaryStr = String.fromCharCode(...charCodes);
+    return btoa(binaryStr).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
 }
 
 function pemToBinary(pem: string): ArrayBuffer {
