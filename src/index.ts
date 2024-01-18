@@ -1,3 +1,12 @@
+import {
+	textToArrayBuffer,
+	arrayBufferToBase64Url,
+	base64UrlToArrayBuffer,
+	textToBase64Url,
+	importKey,
+	decodePayload
+} from "./utils"
+
 if (typeof crypto === 'undefined' || !crypto.subtle)
     throw new Error('SubtleCrypto not supported!')
 
@@ -113,101 +122,6 @@ const algorithms: JwtAlgorithms = {
     RS256: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } },
     RS384: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-384' } },
     RS512: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-512' } }
-}
-
-function bytesToByteString(bytes: Uint8Array): string {
-    let byteStr = ''
-    for (let i = 0; i < bytes.byteLength; i++) {
-        byteStr += String.fromCharCode(bytes[i])
-    }
-    return byteStr
-}
-
-function byteStringToBytes(byteStr: string): Uint8Array {
-    let bytes = new Uint8Array(byteStr.length)
-    for (let i = 0; i < byteStr.length; i++) {
-        bytes[i] = byteStr.charCodeAt(i)
-    }
-    return bytes
-}
-
-function arrayBufferToBase64String(arrayBuffer: ArrayBuffer): string {
-    return btoa(bytesToByteString(new Uint8Array(arrayBuffer)))
-}
-
-function base64StringToArrayBuffer(b64str: string): ArrayBuffer {
-    return byteStringToBytes(atob(b64str)).buffer
-}
-
-function textToArrayBuffer(str: string): ArrayBuffer {
-    return byteStringToBytes(decodeURI(encodeURIComponent(str)))
-}
-
-// @ts-ignore
-function arrayBufferToText(arrayBuffer: ArrayBuffer): string {
-    return bytesToByteString(new Uint8Array(arrayBuffer))
-}
-
-function arrayBufferToBase64Url(arrayBuffer: ArrayBuffer): string {
-    return arrayBufferToBase64String(arrayBuffer).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
-}
-
-function base64UrlToArrayBuffer(b64url: string): ArrayBuffer {
-    return base64StringToArrayBuffer(b64url.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, ''))
-}
-
-function textToBase64Url(str: string): string {
-    const encoder = new TextEncoder();
-    const charCodes = encoder.encode(str);
-    const binaryStr = String.fromCharCode(...charCodes);
-    return btoa(binaryStr).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
-}
-
-function pemToBinary(pem: string): ArrayBuffer {
-    return base64StringToArrayBuffer(pem.replace(/-+(BEGIN|END).*/g, '').replace(/\s/g, ''))
-}
-
-async function importTextSecret(key: string, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
-    return await crypto.subtle.importKey("raw", textToArrayBuffer(key), algorithm, true, ["verify", "sign"])
-}
-
-async function importJwk(key: JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
-    return await crypto.subtle.importKey("jwk", key, algorithm, true, ["verify", "sign"])
-}
-
-async function importPublicKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
-    return await crypto.subtle.importKey("spki", pemToBinary(key), algorithm, true, ["verify"])
-}
-
-async function importPrivateKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
-    return await crypto.subtle.importKey("pkcs8", pemToBinary(key), algorithm, true, ["sign"])
-}
-
-async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
-    if (typeof key === 'object')
-        return importJwk(key, algorithm)
-
-    if (typeof key !== 'string')
-        throw new Error('Unsupported key type!')
-
-    if (key.includes('PUBLIC'))
-        return importPublicKey(key, algorithm)
-
-    if (key.includes('PRIVATE'))
-        return importPrivateKey(key, algorithm)
-
-    return importTextSecret(key, algorithm)
-}
-
-function decodePayload<T = any>(raw: string): T | undefined {
-    try {
-        const bytes = Array.from(atob(raw), char => char.charCodeAt(0));
-        const decodedString = new TextDecoder('utf-8').decode(new Uint8Array(bytes));
-
-        return JSON.parse(decodedString);
-    } catch {
-        return
-    }
 }
 
 /**
