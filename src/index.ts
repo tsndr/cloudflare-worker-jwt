@@ -46,7 +46,7 @@ export type JwtHeader<T = {}> = {
  * @prop {string} [iat] Issued At
  * @prop {string} [jti] JWT ID
  */
-export type JwtPayload<T = {}> = {
+export type JwtPayload<T = { [key: string]: any }> = {
     /** Issuer */
     iss?: string
 
@@ -67,8 +67,6 @@ export type JwtPayload<T = {}> = {
 
     /** JWT ID */
     jti?: string
-
-    [key: string]: any
 } & T
 
 /**
