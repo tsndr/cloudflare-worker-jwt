@@ -1,6 +1,9 @@
+.editorconfig
 .github/
+.gitignore
+.nvmrc
+coverage/
+jest.config.ts
 src/
 tests/
-.editorconfig
-jest.config.ts
 tsconfig.json
