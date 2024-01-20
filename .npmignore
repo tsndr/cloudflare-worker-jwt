@@ -1,9 +1,6 @@
 .github/
 src/
+tests/
 .editorconfig
-index.spec.js
-index.test.js
-utils.spec.js
-utils.test.js
 jest.config.ts
 tsconfig.json
