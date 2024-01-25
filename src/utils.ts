@@ -49,36 +49,37 @@ export function pemToBinary(pem: string): ArrayBuffer {
     return base64StringToArrayBuffer(pem.replace(/-+(BEGIN|END).*/g, '').replace(/\s/g, ''))
 }
 
-export async function importTextSecret(key: string, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
-    return await crypto.subtle.importKey("raw", textToArrayBuffer(key), algorithm, true, ["verify", "sign"])
+type KeyUsages = 'sign' | 'verify';
+export async function importTextSecret(key: string, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+    return await crypto.subtle.importKey("raw", textToArrayBuffer(key), algorithm, true, keyUsages)
 }
 
-export async function importJwk(key: JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
-    return await crypto.subtle.importKey("jwk", key, algorithm, true, ["verify", "sign"])
+export async function importJwk(key: JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+    return await crypto.subtle.importKey("jwk", key, algorithm, true, keyUsages)
 }
 
-export async function importPublicKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
-    return await crypto.subtle.importKey("spki", pemToBinary(key), algorithm, true, ["verify"])
+export async function importPublicKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+    return await crypto.subtle.importKey("spki", pemToBinary(key), algorithm, true, keyUsages)
 }
 
-export async function importPrivateKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
-    return await crypto.subtle.importKey("pkcs8", pemToBinary(key), algorithm, true, ["sign"])
+export async function importPrivateKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+    return await crypto.subtle.importKey("pkcs8", pemToBinary(key), algorithm, true, keyUsages)
 }
 
-export async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm): Promise<CryptoKey> {
+export async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
     if (typeof key === 'object')
-        return importJwk(key, algorithm)
+        return importJwk(key, algorithm, keyUsages)
 
     if (typeof key !== 'string')
         throw new Error('Unsupported key type!')
 
     if (key.includes('PUBLIC'))
-        return importPublicKey(key, algorithm)
+        return importPublicKey(key, algorithm, keyUsages)
 
     if (key.includes('PRIVATE'))
-        return importPrivateKey(key, algorithm)
+        return importPrivateKey(key, algorithm, keyUsages)
 
-    return importTextSecret(key, algorithm)
+    return importTextSecret(key, algorithm, keyUsages)
 }
 
 export function decodePayload<T = any>(raw: string): T | undefined {

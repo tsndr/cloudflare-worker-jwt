@@ -156,7 +156,7 @@ export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payloa
 
     const partialToken = `${textToBase64Url(JSON.stringify({ ...options.header, alg: options.algorithm }))}.${textToBase64Url(JSON.stringify(payload))}`
 
-    const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm)
+    const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ['sign'])
     const signature = await crypto.subtle.sign(algorithm, key, textToArrayBuffer(partialToken))
 
     return `${partialToken}.${arrayBufferToBase64Url(signature)}`
@@ -208,7 +208,7 @@ export async function verify(token: string, secret: string | JsonWebKey | Crypto
         if (payload.exp && payload.exp <= Math.floor(Date.now() / 1000))
             throw new Error('EXPIRED')
 
-        const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm)
+        const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ['verify'])
 
         return await crypto.subtle.verify(algorithm, key, base64UrlToArrayBuffer(tokenParts[2]), textToArrayBuffer(`${tokenParts[0]}.${tokenParts[1]}`))
     } catch(err) {
