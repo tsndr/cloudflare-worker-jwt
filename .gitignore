@@ -144,5 +144,4 @@ dist
 .pnp.*
 
 # Custom
-/index.js
-/index.d.ts
+types/

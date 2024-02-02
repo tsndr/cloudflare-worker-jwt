@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
+        "rootDir": ".",
         "allowJs": true,
-        "outDir": ".",
+        "checkJs": true,
         "module": "esnext",
         "target": "esnext",
         "lib": ["esnext"],
@@ -21,6 +22,9 @@
         "esModuleInterop": true,
         "preserveConstEnums": true,
         "moduleResolution": "node",
+        "emitDeclarationOnly": true,
+        "declarationDir": "types",
+        "declarationMap": true,
         "types": ["@cloudflare/workers-types"]
     },
     "include": ["src"],

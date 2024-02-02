@@ -1,4 +1,8 @@
-export function bytesToByteString(bytes: Uint8Array): string {
+/**
+ * @param {Uint8Array} bytes
+ * @returns {string}
+ */
+export function bytesToByteString(bytes) {
     let byteStr = ''
     for (let i = 0; i < bytes.byteLength; i++) {
         byteStr += String.fromCharCode(bytes[i])
@@ -6,7 +10,11 @@ export function bytesToByteString(bytes: Uint8Array): string {
     return byteStr
 }
 
-export function byteStringToBytes(byteStr: string): Uint8Array {
+/**
+ * @param {string} byteStr
+ * @returns {Uint8Array}
+ */
+export function byteStringToBytes(byteStr) {
     let bytes = new Uint8Array(byteStr.length)
     for (let i = 0; i < byteStr.length; i++) {
         bytes[i] = byteStr.charCodeAt(i)
@@ -14,59 +22,124 @@ export function byteStringToBytes(byteStr: string): Uint8Array {
     return bytes
 }
 
-export function arrayBufferToBase64String(arrayBuffer: ArrayBuffer): string {
+/**
+ * @param {ArrayBuffer} arrayBuffer
+ * @returns {string}
+ */
+export function arrayBufferToBase64String(arrayBuffer) {
     return btoa(bytesToByteString(new Uint8Array(arrayBuffer)))
 }
 
-export function base64StringToArrayBuffer(b64str: string): ArrayBuffer {
+/**
+ * @param {string} b64str
+ * @returns {ArrayBuffer}
+ */
+export function base64StringToArrayBuffer(b64str) {
     return byteStringToBytes(atob(b64str)).buffer
 }
 
-export function textToArrayBuffer(str: string): ArrayBuffer {
+/**
+ * @param {string} str
+ * @returns {ArrayBuffer}
+ */
+export function textToArrayBuffer(str) {
     return byteStringToBytes(decodeURI(encodeURIComponent(str)))
 }
 
-export function arrayBufferToText(arrayBuffer: ArrayBuffer): string {
+/**
+ * @param {ArrayBuffer} arrayBuffer
+ * @returns {string}
+ */
+export function arrayBufferToText(arrayBuffer) {
     return bytesToByteString(new Uint8Array(arrayBuffer))
 }
 
-export function arrayBufferToBase64Url(arrayBuffer: ArrayBuffer): string {
+/**
+ * @param {ArrayBuffer} arrayBuffer
+ * @returns {string}
+ */
+export function arrayBufferToBase64Url(arrayBuffer) {
     return arrayBufferToBase64String(arrayBuffer).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
 }
 
-export function base64UrlToArrayBuffer(b64url: string): ArrayBuffer {
+/**
+ * @param {string} b64url
+ * @returns {ArrayBuffer}
+ */
+export function base64UrlToArrayBuffer(b64url) {
     return base64StringToArrayBuffer(b64url.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, ''))
 }
 
-export function textToBase64Url(str: string): string {
+/**
+ * @param {string} str
+ * @returns {string}
+ */
+export function textToBase64Url(str) {
     const encoder = new TextEncoder();
     const charCodes = encoder.encode(str);
     const binaryStr = String.fromCharCode(...charCodes);
     return btoa(binaryStr).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
 }
 
-export function pemToBinary(pem: string): ArrayBuffer {
+/**
+ * @param {string} pem
+ * @returns {ArrayBuffer}
+ */
+export function pemToBinary(pem) {
     return base64StringToArrayBuffer(pem.replace(/-+(BEGIN|END).*/g, '').replace(/\s/g, ''))
 }
 
-type KeyUsages = 'sign' | 'verify';
-export async function importTextSecret(key: string, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+/**
+ * @typedef {'sign' | 'verify'} KeyUsages
+ */
+
+/**
+ * @param {string} key
+ * @param {import('@cloudflare/workers-types').SubtleCryptoImportKeyAlgorithm} algorithm
+ * @param {KeyUsages[]} keyUsages
+ * @returns {Promise<CryptoKey>}
+ */
+export async function importTextSecret(key, algorithm, keyUsages) {
     return await crypto.subtle.importKey("raw", textToArrayBuffer(key), algorithm, true, keyUsages)
 }
 
-export async function importJwk(key: JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+/**
+ * @param {JsonWebKey} key
+ * @param {import('@cloudflare/workers-types').SubtleCryptoImportKeyAlgorithm} algorithm
+ * @param {KeyUsages[]} keyUsages
+ * @returns {Promise<CryptoKey>}
+ */
+export async function importJwk(key, algorithm, keyUsages) {
     return await crypto.subtle.importKey("jwk", key, algorithm, true, keyUsages)
 }
 
-export async function importPublicKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+/**
+ * @param {string} key
+ * @param {import('@cloudflare/workers-types').SubtleCryptoImportKeyAlgorithm} algorithm
+ * @param {KeyUsages[]} keyUsages
+ * @returns {Promise<CryptoKey>}
+ */
+export async function importPublicKey(key, algorithm, keyUsages) {
     return await crypto.subtle.importKey("spki", pemToBinary(key), algorithm, true, keyUsages)
 }
 
-export async function importPrivateKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+/**
+ * @param {string} key
+ * @param {import('@cloudflare/workers-types').SubtleCryptoImportKeyAlgorithm} algorithm
+ * @param {KeyUsages[]} keyUsages
+ * @returns {Promise<CryptoKey>}
+ */
+export async function importPrivateKey(key, algorithm, keyUsages) {
     return await crypto.subtle.importKey("pkcs8", pemToBinary(key), algorithm, true, keyUsages)
 }
 
-export async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+/**
+ * @param {string | JsonWebKey} key
+ * @param {import('@cloudflare/workers-types').SubtleCryptoImportKeyAlgorithm} algorithm
+ * @param {KeyUsages[]} keyUsages
+ * @returns {Promise<CryptoKey>}
+ */
+export async function importKey(key, algorithm, keyUsages) {
     if (typeof key === 'object')
         return importJwk(key, algorithm, keyUsages)
 
@@ -82,7 +155,12 @@ export async function importKey(key: string | JsonWebKey, algorithm: SubtleCrypt
     return importTextSecret(key, algorithm, keyUsages)
 }
 
-export function decodePayload<T = any>(raw: string): T | undefined {
+/**
+ * @template [T = any]
+ * @param {string} raw
+ * @returns {T | undefined}
+ */
+export function decodePayload(raw) {
     try {
         const bytes = Array.from(atob(raw), char => char.charCodeAt(0));
         const decodedString = new TextDecoder('utf-8').decode(new Uint8Array(bytes));

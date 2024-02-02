@@ -11,7 +11,7 @@ import {
 	textToBase64Url,
 	pemToBinary,
 	importTextSecret
-} from '../src/utils'
+} from '../src/utils.js'
 
 describe('Converters', () => {
 	const testString = 'cloudflare-worker-jwt'

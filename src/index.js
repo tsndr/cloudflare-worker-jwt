@@ -5,112 +5,15 @@ import {
 	textToBase64Url,
 	importKey,
 	decodePayload
-} from "./utils"
+} from './utils.js'
 
 if (typeof crypto === 'undefined' || !crypto.subtle)
     throw new Error('SubtleCrypto not supported!')
 
 /**
- * @typedef JwtAlgorithm
- * @type {'ES256' | 'ES384' | 'ES512' | 'HS256' | 'HS384' | 'HS512' | 'RS256' | 'RS384' | 'RS512'}
+ * @type {import('./types.ts').JwtAlgorithms}
  */
-export type JwtAlgorithm = 'ES256' | 'ES384' | 'ES512' | 'HS256' | 'HS384' | 'HS512' | 'RS256' | 'RS384' | 'RS512'
-
-/**
- * @typedef JwtAlgorithms
- */
-export type JwtAlgorithms = {
-    [key: string]: SubtleCryptoImportKeyAlgorithm
-}
-
-/**
- * @typedef JwtHeader
- * @prop {string} [typ] Type
- */
-export type JwtHeader<T = {}> = {
-    /**
-     * Type (default: `"JWT"`)
-     *
-     * @default "JWT"
-     */
-    typ?: string
-} & T
-
-/**
- * @typedef JwtPayload
- * @prop {string} [iss] Issuer
- * @prop {string} [sub] Subject
- * @prop {string | string[]} [aud] Audience
- * @prop {string} [exp] Expiration Time
- * @prop {string} [nbf] Not Before
- * @prop {string} [iat] Issued At
- * @prop {string} [jti] JWT ID
- */
-export type JwtPayload<T = { [key: string]: any }> = {
-    /** Issuer */
-    iss?: string
-
-    /** Subject */
-    sub?: string
-
-    /** Audience */
-    aud?: string | string[]
-
-    /** Expiration Time */
-    exp?: number
-
-    /** Not Before */
-    nbf?: number
-
-    /** Issued At */
-    iat?: number
-
-    /** JWT ID */
-    jti?: string
-} & T
-
-/**
- * @typedef JwtOptions
- * @prop {JwtAlgorithm | string} algorithm
- */
-export type JwtOptions = {
-    algorithm?: JwtAlgorithm | string
-}
-
-/**
- * @typedef JwtSignOptions
- * @extends JwtOptions
- * @prop {JwtHeader} [header]
- */
-export type JwtSignOptions<T> = {
-    header?: JwtHeader<T>
-} & JwtOptions
-
-/**
- * @typedef JwtVerifyOptions
- * @extends JwtOptions
- * @prop {boolean} [throwError=false] If `true` throw error if checks fail. (default: `false`)
- */
-export type JwtVerifyOptions = {
-    /**
-     * If `true` throw error if checks fail. (default: `false`)
-     *
-     * @default false
-    */
-    throwError?: boolean
-} & JwtOptions
-
-/**
- * @typedef JwtData
- * @prop {JwtHeader} header
- * @prop {JwtPayload} payload
- */
-export type JwtData<Payload = {}, Header = {}> = {
-    header?: JwtHeader<Header>
-    payload?: JwtPayload<Payload>
-}
-
-const algorithms: JwtAlgorithms = {
+const algorithms = {
     ES256: { name: 'ECDSA', namedCurve: 'P-256', hash: { name: 'SHA-256' } },
     ES384: { name: 'ECDSA', namedCurve: 'P-384', hash: { name: 'SHA-384' } },
     ES512: { name: 'ECDSA', namedCurve: 'P-521', hash: { name: 'SHA-512' } },
@@ -124,18 +27,19 @@ const algorithms: JwtAlgorithms = {
 
 /**
  * Signs a payload and returns the token
- *
- * @param {JwtPayload} payload The payload object. To use `nbf` (Not Before) and/or `exp` (Expiration Time) add `nbf` and/or `exp` to the payload.
- * @param {string | JsonWebKey | CryptoKey} secret A string which is used to sign the payload.
- * @param {JwtSignOptions | JwtAlgorithm | string} [options={ algorithm: 'HS256', header: { typ: 'JWT' } }] The options object or the algorithm.
+ * @template [Payload = {}]
+ * @template [Header = {}]
+ * @param {import('./types.ts').JwtPayload<Payload>} payload - The payload object. To use `nbf` (Not Before) and/or `exp` (Expiration Time) add `nbf` and/or `exp` to the payload.
+ * @param {string | JsonWebKey| CryptoKey} secret - A string which is used to sign the payload.
+ * @param {import('./types.ts').JwtSignOptions<Header> | import('./types.ts').JwtAlgorithm} [options = 'HS256'] - The options object or the algorithm.
  * @throws {Error} If there's a validation issue.
  * @returns {Promise<string>} Returns token as a `string`.
  */
-export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKey, options: JwtSignOptions<Header> | JwtAlgorithm = 'HS256'): Promise<string> {
+export async function sign(payload, secret, options) {
     if (typeof options === 'string')
         options = { algorithm: options }
 
-    options = { algorithm: 'HS256', header: { typ: 'JWT' } as JwtHeader<Header>, ...options }
+    options = { algorithm: 'HS256', header: /** @type {import('./types.ts').JwtHeader<Header>} */({ typ: 'JWT' }), ...options }
 
     if (!payload || typeof payload !== 'object')
         throw new Error('payload must be an object')
@@ -146,7 +50,8 @@ export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payloa
     if (typeof options.algorithm !== 'string')
         throw new Error('options.algorithm must be a string')
 
-    const algorithm: SubtleCryptoImportKeyAlgorithm = algorithms[options.algorithm]
+    /** @type {SubtleCryptoImportKeyAlgorithm} */
+    const algorithm = algorithms[options.algorithm]
 
     if (!algorithm)
         throw new Error('algorithm not found')
@@ -165,13 +70,13 @@ export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payloa
 /**
  * Verifies the integrity of the token and returns a boolean value.
  *
- * @param {string} token The token string generated by `jwt.sign()`.
- * @param {string | JsonWebKey | CryptoKey} secret The string which was used to sign the payload.
- * @param {JWTVerifyOptions | JWTAlgorithm} options The options object or the algorithm.
- * @throws {Error | string} Throws an error `string` if the token is invalid or an `Error-Object` if there's a validation issue.
+ * @param {string} token - The token string generated by `jwt.sign()`.
+ * @param {string | JsonWebKey | CryptoKey} secret - The string which was used to sign the payload.
+ * @param {import('./types.ts').JwtVerifyOptions | import('./types.ts').JwtAlgorithm} [options = { algorithm: 'HS256', throwError: false }] - The options object or the algorithm.
+ * @throws {Error | string} - Throws an error `string` if the token is invalid or an `Error-Object` if there's a validation issue.
  * @returns {Promise<boolean>} Returns `true` if signature, `nbf` (if set) and `exp` (if set) are valid, otherwise returns `false`.
  */
-export async function verify(token: string, secret: string | JsonWebKey | CryptoKey, options: JwtVerifyOptions | JwtAlgorithm = { algorithm: 'HS256', throwError: false }): Promise<boolean> {
+export async function verify(token, secret, options = { algorithm: 'HS256', throwError: false }) {
     if (typeof options === 'string')
         options = { algorithm: options, throwError: false }
 
@@ -191,7 +96,8 @@ export async function verify(token: string, secret: string | JsonWebKey | Crypto
     if (tokenParts.length !== 3)
         throw new Error('token must consist of 3 parts')
 
-    const algorithm: SubtleCryptoImportKeyAlgorithm = algorithms[options.algorithm]
+    /** @type {SubtleCryptoImportKeyAlgorithm} */
+    const algorithm = algorithms[options.algorithm]
 
     if (!algorithm)
         throw new Error('algorithm not found')
@@ -222,13 +128,15 @@ export async function verify(token: string, secret: string | JsonWebKey | Crypto
 /**
  * Returns the payload **without** verifying the integrity of the token. Please use `jwt.verify()` first to keep your application secure!
  *
- * @param {string} token The token string generated by `jwt.sign()`.
- * @returns {JwtData} Returns an `object` containing `header` and `payload`.
+ * @template [Payload = {}]
+ * @template [Header = {}]
+ * @param {string} token - The token string generated by `jwt.sign()`.
+ * @returns {import('./types.ts').JwtData<Payload, Header>} Returns an `object` containing `header` and `payload`.
  */
-export function decode<Payload = {}, Header = {}>(token: string): JwtData<Payload, Header> {
+export function decode(token) {
     return {
-        header: decodePayload<JwtHeader<Header>>(token.split('.')[0].replace(/-/g, '+').replace(/_/g, '/')),
-        payload: decodePayload<JwtPayload<Payload>>(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+        header: decodePayload(token.split('.')[0].replace(/-/g, '+').replace(/_/g, '/')),
+        payload: decodePayload(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
     }
 }
 
