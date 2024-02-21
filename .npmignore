@@ -3,7 +3,7 @@
 .gitignore
 .nvmrc
 coverage/
-jest.config.ts
+vite.config.ts
 src/
 tests/
 tsconfig.json

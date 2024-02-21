@@ -1,7 +1,4 @@
-import crypto from 'node:crypto'
-Object.defineProperty(global, 'crypto', { value: { subtle: crypto.webcrypto.subtle }})
-
-import { describe, expect, test } from '@jest/globals'
+import { describe, expect, test } from 'vitest'
 import jwt, { JwtAlgorithm } from '../src/index'
 
 type Dataset = {
