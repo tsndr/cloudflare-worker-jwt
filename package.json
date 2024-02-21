@@ -9,7 +9,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc & esbuild --bundle --target=esnext --platform=neutral --outfile=index.js src/index.ts & wait",
     "test": "vitest"
   },
   "repository": {
