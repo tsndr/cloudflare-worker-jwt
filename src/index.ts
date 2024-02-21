@@ -1,10 +1,10 @@
 import {
-	textToArrayBuffer,
-	arrayBufferToBase64Url,
-	base64UrlToArrayBuffer,
-	textToBase64Url,
-	importKey,
-	decodePayload
+    textToArrayBuffer,
+    arrayBufferToBase64Url,
+    base64UrlToArrayBuffer,
+    textToBase64Url,
+    importKey,
+    decodePayload
 } from "./utils"
 
 if (typeof crypto === 'undefined' || !crypto.subtle)
@@ -214,7 +214,6 @@ export async function verify(token: string, secret: string | JsonWebKey | Crypto
     } catch(err) {
         if (options.throwError)
             throw err
-
         return false
     }
 }
