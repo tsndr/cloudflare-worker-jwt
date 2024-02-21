@@ -34,6 +34,13 @@ export type JwtHeader<T = {}> = {
      * @default "JWT"
      */
     typ?: string
+
+    /**
+     * Algorithm (default: `"HS256"`)
+     *
+     * @default "HS256"
+     */
+    alg?: JwtAlgorithm
 } & T
 
 /**
@@ -196,7 +203,13 @@ export async function verify(token: string, secret: string | JsonWebKey | Crypto
     if (!algorithm)
         throw new Error('algorithm not found')
 
-    const { payload } = decode(token)
+    const { header, payload } = decode(token)
+
+    if (header?.alg !== options.algorithm) {
+        if (options.throwError)
+            throw new Error('ALG_MISMATCH')
+        return false
+    }
 
     try {
         if (!payload)
