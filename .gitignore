@@ -146,3 +146,5 @@ dist
 # Custom
 /index.js
 /index.d.ts
+/utils.js
+/utils.d.ts

@@ -7,3 +7,5 @@ vite.config.ts
 src/
 tests/
 tsconfig.json
+utils.*
+*.tgz
