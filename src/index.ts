@@ -100,6 +100,11 @@ export type JwtSignOptions<T> = {
  */
 export type JwtVerifyOptions = {
     /**
+    * Clock tolerance to help with slightly out of sync systems
+    */
+    clockTolerance?: number
+
+    /**
      * If `true` throw error if checks fail. (default: `false`)
      *
      * @default false
@@ -178,11 +183,10 @@ export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payloa
  * @throws {Error | string} Throws an error `string` if the token is invalid or an `Error-Object` if there's a validation issue.
  * @returns {Promise<boolean>} Returns `true` if signature, `nbf` (if set) and `exp` (if set) are valid, otherwise returns `false`.
  */
-export async function verify(token: string, secret: string | JsonWebKey | CryptoKey, options: JwtVerifyOptions | JwtAlgorithm = { algorithm: 'HS256', throwError: false }): Promise<boolean> {
+export async function verify(token: string, secret: string | JsonWebKey | CryptoKey, options: JwtVerifyOptions | JwtAlgorithm = 'HS256'): Promise<boolean> {
     if (typeof options === 'string')
-        options = { algorithm: options, throwError: false }
-
-    options = { algorithm: 'HS256', throwError: false, ...options }
+        options = { algorithm: options }
+    options = { algorithm: 'HS256', clockTolerance: 0, throwError: false, ...options }
 
     if (typeof token !== 'string')
         throw new Error('token must be a string')
@@ -215,10 +219,12 @@ export async function verify(token: string, secret: string | JsonWebKey | Crypto
         if (!payload)
             throw new Error('PARSE_ERROR')
 
-        if (payload.nbf && payload.nbf > Math.floor(Date.now() / 1000))
+        const now = Math.floor(Date.now() / 1000)
+
+        if (payload.nbf && Math.abs(payload.nbf - now) > (options.clockTolerance ?? 0))
             throw new Error('NOT_YET_VALID')
 
-        if (payload.exp && payload.exp <= Math.floor(Date.now() / 1000))
+        if (payload.exp &&  Math.abs(payload.exp - now) > (options.clockTolerance ?? 0))
             throw new Error('EXPIRED')
 
         const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ['verify'])
