@@ -137,7 +137,6 @@ describe('Verify', async () => {
     })
 
     test('Expired', () => {
-        console.log({ exp, now: Math.floor(Date.now() / 1000) })
         expect(jwt.verify(expiredToken, secret, { throwError: true })).rejects.toThrowError('EXPIRED')
     })
 
