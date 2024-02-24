@@ -7,14 +7,14 @@ import {
     decodePayload
 } from "./utils"
 
-if (typeof crypto === 'undefined' || !crypto.subtle)
-    throw new Error('SubtleCrypto not supported!')
+if (typeof crypto === "undefined" || !crypto.subtle)
+    throw new Error("SubtleCrypto not supported!")
 
 /**
  * @typedef JwtAlgorithm
- * @type {'ES256' | 'ES384' | 'ES512' | 'HS256' | 'HS384' | 'HS512' | 'RS256' | 'RS384' | 'RS512'}
+ * @type {"ES256" | "ES384" | "ES512" | "HS256" | "HS384" | "HS512" | "RS256" | "RS384" | "RS512"}
  */
-export type JwtAlgorithm = 'ES256' | 'ES384' | 'ES512' | 'HS256' | 'HS384' | 'HS512' | 'RS256' | 'RS384' | 'RS512'
+export type JwtAlgorithm = "ES256" | "ES384" | "ES512" | "HS256" | "HS384" | "HS512" | "RS256" | "RS384" | "RS512"
 
 /**
  * @typedef JwtAlgorithms
@@ -123,15 +123,15 @@ export type JwtData<Payload = {}, Header = {}> = {
 }
 
 const algorithms: JwtAlgorithms = {
-    ES256: { name: 'ECDSA', namedCurve: 'P-256', hash: { name: 'SHA-256' } },
-    ES384: { name: 'ECDSA', namedCurve: 'P-384', hash: { name: 'SHA-384' } },
-    ES512: { name: 'ECDSA', namedCurve: 'P-521', hash: { name: 'SHA-512' } },
-    HS256: { name: 'HMAC', hash: { name: 'SHA-256' } },
-    HS384: { name: 'HMAC', hash: { name: 'SHA-384' } },
-    HS512: { name: 'HMAC', hash: { name: 'SHA-512' } },
-    RS256: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } },
-    RS384: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-384' } },
-    RS512: { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-512' } }
+    ES256: { name: "ECDSA", namedCurve: "P-256", hash: { name: "SHA-256" } },
+    ES384: { name: "ECDSA", namedCurve: "P-384", hash: { name: "SHA-384" } },
+    ES512: { name: "ECDSA", namedCurve: "P-521", hash: { name: "SHA-512" } },
+    HS256: { name: "HMAC", hash: { name: "SHA-256" } },
+    HS384: { name: "HMAC", hash: { name: "SHA-384" } },
+    HS512: { name: "HMAC", hash: { name: "SHA-512" } },
+    RS256: { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } },
+    RS384: { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-384" } },
+    RS512: { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-512" } }
 }
 
 /**
@@ -139,36 +139,36 @@ const algorithms: JwtAlgorithms = {
  *
  * @param {JwtPayload} payload The payload object. To use `nbf` (Not Before) and/or `exp` (Expiration Time) add `nbf` and/or `exp` to the payload.
  * @param {string | JsonWebKey | CryptoKey} secret A string which is used to sign the payload.
- * @param {JwtSignOptions | JwtAlgorithm | string} [options={ algorithm: 'HS256', header: { typ: 'JWT' } }] The options object or the algorithm.
- * @throws {Error} If there's a validation issue.
+ * @param {JwtSignOptions | JwtAlgorithm | string} [options={ algorithm: "HS256", header: { typ: "JWT" } }] The options object or the algorithm.
+ * @throws {Error} If there"s a validation issue.
  * @returns {Promise<string>} Returns token as a `string`.
  */
-export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKey, options: JwtSignOptions<Header> | JwtAlgorithm = 'HS256'): Promise<string> {
-    if (typeof options === 'string')
+export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKey, options: JwtSignOptions<Header> | JwtAlgorithm = "HS256"): Promise<string> {
+    if (typeof options === "string")
         options = { algorithm: options }
 
-    options = { algorithm: 'HS256', header: { typ: 'JWT' } as JwtHeader<Header>, ...options }
+    options = { algorithm: "HS256", header: { typ: "JWT" } as JwtHeader<Header>, ...options }
 
-    if (!payload || typeof payload !== 'object')
-        throw new Error('payload must be an object')
+    if (!payload || typeof payload !== "object")
+        throw new Error("payload must be an object")
 
-    if (!secret || (typeof secret !== 'string' && typeof secret !== 'object'))
-        throw new Error('secret must be a string, a JWK object or a CryptoKey object')
+    if (!secret || (typeof secret !== "string" && typeof secret !== "object"))
+        throw new Error("secret must be a string, a JWK object or a CryptoKey object")
 
-    if (typeof options.algorithm !== 'string')
-        throw new Error('options.algorithm must be a string')
+    if (typeof options.algorithm !== "string")
+        throw new Error("options.algorithm must be a string")
 
     const algorithm: SubtleCryptoImportKeyAlgorithm = algorithms[options.algorithm]
 
     if (!algorithm)
-        throw new Error('algorithm not found')
+        throw new Error("algorithm not found")
 
     if (!payload.iat)
         payload.iat = Math.floor(Date.now() / 1000)
 
     const partialToken = `${textToBase64Url(JSON.stringify({ ...options.header, alg: options.algorithm }))}.${textToBase64Url(JSON.stringify(payload))}`
 
-    const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ['sign'])
+    const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ["sign"])
     const signature = await crypto.subtle.sign(algorithm, key, textToArrayBuffer(partialToken))
 
     return `${partialToken}.${arrayBufferToBase64Url(signature)}`
@@ -180,54 +180,54 @@ export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payloa
  * @param {string} token The token string generated by `jwt.sign()`.
  * @param {string | JsonWebKey | CryptoKey} secret The string which was used to sign the payload.
  * @param {JWTVerifyOptions | JWTAlgorithm} options The options object or the algorithm.
- * @throws {Error | string} Throws an error `string` if the token is invalid or an `Error-Object` if there's a validation issue.
+ * @throws {Error | string} Throws an error `string` if the token is invalid or an `Error-Object` if there"s a validation issue.
  * @returns {Promise<boolean>} Returns `true` if signature, `nbf` (if set) and `exp` (if set) are valid, otherwise returns `false`.
  */
-export async function verify(token: string, secret: string | JsonWebKey | CryptoKey, options: JwtVerifyOptions | JwtAlgorithm = 'HS256'): Promise<boolean> {
-    if (typeof options === 'string')
+export async function verify(token: string, secret: string | JsonWebKey | CryptoKey, options: JwtVerifyOptions | JwtAlgorithm = "HS256"): Promise<boolean> {
+    if (typeof options === "string")
         options = { algorithm: options }
-    options = { algorithm: 'HS256', clockTolerance: 0, throwError: false, ...options }
+    options = { algorithm: "HS256", clockTolerance: 0, throwError: false, ...options }
 
-    if (typeof token !== 'string')
-        throw new Error('token must be a string')
+    if (typeof token !== "string")
+        throw new Error("token must be a string")
 
-    if (typeof secret !== 'string' && typeof secret !== 'object')
-        throw new Error('secret must be a string, a JWK object or a CryptoKey object')
+    if (typeof secret !== "string" && typeof secret !== "object")
+        throw new Error("secret must be a string, a JWK object or a CryptoKey object")
 
-    if (typeof options.algorithm !== 'string')
-        throw new Error('options.algorithm must be a string')
+    if (typeof options.algorithm !== "string")
+        throw new Error("options.algorithm must be a string")
 
-    const tokenParts = token.split('.')
+    const tokenParts = token.split(".")
 
     if (tokenParts.length !== 3)
-        throw new Error('token must consist of 3 parts')
+        throw new Error("token must consist of 3 parts")
 
     const algorithm: SubtleCryptoImportKeyAlgorithm = algorithms[options.algorithm]
 
     if (!algorithm)
-        throw new Error('algorithm not found')
+        throw new Error("algorithm not found")
 
     const { header, payload } = decode(token)
 
     if (header?.alg !== options.algorithm) {
         if (options.throwError)
-            throw new Error('ALG_MISMATCH')
+            throw new Error("ALG_MISMATCH")
         return false
     }
 
     try {
         if (!payload)
-            throw new Error('PARSE_ERROR')
+            throw new Error("PARSE_ERROR")
 
         const now = Math.floor(Date.now() / 1000)
 
         if (payload.nbf && payload.nbf > now && Math.abs(payload.nbf - now) > (options.clockTolerance ?? 0))
-            throw new Error('NOT_YET_VALID')
+            throw new Error("NOT_YET_VALID")
 
         if (payload.exp && payload.exp <= now && Math.abs(payload.exp - now) > (options.clockTolerance ?? 0))
-            throw new Error('EXPIRED')
+            throw new Error("EXPIRED")
 
-        const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ['verify'])
+        const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ["verify"])
 
         return await crypto.subtle.verify(algorithm, key, base64UrlToArrayBuffer(tokenParts[2]), textToArrayBuffer(`${tokenParts[0]}.${tokenParts[1]}`))
     } catch(err) {
@@ -245,8 +245,8 @@ export async function verify(token: string, secret: string | JsonWebKey | Crypto
  */
 export function decode<Payload = {}, Header = {}>(token: string): JwtData<Payload, Header> {
     return {
-        header: decodePayload<JwtHeader<Header>>(token.split('.')[0].replace(/-/g, '+').replace(/_/g, '/')),
-        payload: decodePayload<JwtPayload<Payload>>(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+        header: decodePayload<JwtHeader<Header>>(token.split(".")[0].replace(/-/g, "+").replace(/_/g, "/")),
+        payload: decodePayload<JwtPayload<Payload>>(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
     }
 }
 

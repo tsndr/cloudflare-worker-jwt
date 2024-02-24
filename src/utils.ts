@@ -1,5 +1,5 @@
 export function bytesToByteString(bytes: Uint8Array): string {
-    let byteStr = ''
+    let byteStr = ""
     for (let i = 0; i < bytes.byteLength; i++) {
         byteStr += String.fromCharCode(bytes[i])
     }
@@ -31,25 +31,25 @@ export function arrayBufferToText(arrayBuffer: ArrayBuffer): string {
 }
 
 export function arrayBufferToBase64Url(arrayBuffer: ArrayBuffer): string {
-    return arrayBufferToBase64String(arrayBuffer).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+    return arrayBufferToBase64String(arrayBuffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
 }
 
 export function base64UrlToArrayBuffer(b64url: string): ArrayBuffer {
-    return base64StringToArrayBuffer(b64url.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, ''))
+    return base64StringToArrayBuffer(b64url.replace(/-/g, "+").replace(/_/g, "/").replace(/\s/g, ""))
 }
 
 export function textToBase64Url(str: string): string {
     const encoder = new TextEncoder();
     const charCodes = encoder.encode(str);
     const binaryStr = String.fromCharCode(...charCodes);
-    return btoa(binaryStr).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+    return btoa(binaryStr).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
 }
 
 export function pemToBinary(pem: string): ArrayBuffer {
-    return base64StringToArrayBuffer(pem.replace(/-+(BEGIN|END).*/g, '').replace(/\s/g, ''))
+    return base64StringToArrayBuffer(pem.replace(/-+(BEGIN|END).*/g, "").replace(/\s/g, ""))
 }
 
-type KeyUsages = 'sign' | 'verify';
+type KeyUsages = "sign" | "verify";
 export async function importTextSecret(key: string, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
     return await crypto.subtle.importKey("raw", textToArrayBuffer(key), algorithm, true, keyUsages)
 }
@@ -67,16 +67,16 @@ export async function importPrivateKey(key: string, algorithm: SubtleCryptoImpor
 }
 
 export async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
-    if (typeof key === 'object')
+    if (typeof key === "object")
         return importJwk(key, algorithm, keyUsages)
 
-    if (typeof key !== 'string')
-        throw new Error('Unsupported key type!')
+    if (typeof key !== "string")
+        throw new Error("Unsupported key type!")
 
-    if (key.includes('PUBLIC'))
+    if (key.includes("PUBLIC"))
         return importPublicKey(key, algorithm, keyUsages)
 
-    if (key.includes('PRIVATE'))
+    if (key.includes("PRIVATE"))
         return importPrivateKey(key, algorithm, keyUsages)
 
     return importTextSecret(key, algorithm, keyUsages)
@@ -85,7 +85,7 @@ export async function importKey(key: string | JsonWebKey, algorithm: SubtleCrypt
 export function decodePayload<T = any>(raw: string): T | undefined {
     try {
         const bytes = Array.from(atob(raw), char => char.charCodeAt(0));
-        const decodedString = new TextDecoder('utf-8').decode(new Uint8Array(bytes));
+        const decodedString = new TextDecoder("utf-8").decode(new Uint8Array(bytes));
 
         return JSON.parse(decodedString);
     } catch {
