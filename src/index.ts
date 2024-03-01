@@ -221,10 +221,10 @@ export async function verify(token: string, secret: string | JsonWebKey | Crypto
 
         const now = Math.floor(Date.now() / 1000)
 
-        if (payload.nbf && payload.nbf > now && Math.abs(payload.nbf - now) > (options.clockTolerance ?? 0))
+        if (payload.nbf && payload.nbf > now && (payload.nbf - now) > (options.clockTolerance ?? 0))
             throw new Error("NOT_YET_VALID")
 
-        if (payload.exp && payload.exp <= now && Math.abs(payload.exp - now) > (options.clockTolerance ?? 0))
+        if (payload.exp && payload.exp <= now && (now - payload.exp) > (options.clockTolerance ?? 0))
             throw new Error("EXPIRED")
 
         const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ["verify"])
