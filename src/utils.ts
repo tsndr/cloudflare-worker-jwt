@@ -23,7 +23,7 @@ export function base64StringToArrayBuffer(b64str: string): ArrayBuffer {
 }
 
 export function textToArrayBuffer(str: string): ArrayBuffer {
-    return byteStringToBytes(decodeURI(encodeURIComponent(str)))
+    return byteStringToBytes(str)
 }
 
 export function arrayBufferToText(arrayBuffer: ArrayBuffer): string {
