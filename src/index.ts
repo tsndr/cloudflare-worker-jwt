@@ -143,7 +143,7 @@ const algorithms: JwtAlgorithms = {
  * @throws {Error} If there"s a validation issue.
  * @returns {Promise<string>} Returns token as a `string`.
  */
-export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKey, options: JwtSignOptions<Header> | JwtAlgorithm = "HS256"): Promise<string> {
+export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKey | CryptoKey, options: JwtSignOptions<Header> | JwtAlgorithm = "HS256"): Promise<string> {
     if (typeof options === "string")
         options = { algorithm: options }
 
