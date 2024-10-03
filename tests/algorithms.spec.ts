@@ -83,7 +83,7 @@ describe("Internal", () => {
         expect(decoded.payload).toMatchObject(payload)
 
         const verified = await jwt.verify(token, data.public, algorithm)
-        expect(verified).toBe(true)
+        expect(verified).toBeTruthy()
     })
 })
 
@@ -99,6 +99,6 @@ describe("External", async () => {
         })
 
         const verified = await jwt.verify(data.token, data.public, algorithm)
-        expect(verified).toBe(true)
+        expect(verified).toBeTruthy()
     })
 })

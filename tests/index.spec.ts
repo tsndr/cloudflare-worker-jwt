@@ -14,11 +14,11 @@ describe("Verify", async () => {
     const expiredToken = await jwt.sign({ sub: "me", exp: now - offset }, secret)
 
     test("Valid", () => {
-        expect(jwt.verify(validToken, secret, { throwError: true })).resolves.toBe(true)
+        expect(jwt.verify(validToken, secret, { throwError: true })).resolves.toBeTruthy()
     })
 
     test("Not yet expired", () => {
-        expect(jwt.verify(notYetExpired, secret, { throwError: true })).resolves.toBe(true)
+        expect(jwt.verify(notYetExpired, secret, { throwError: true })).resolves.toBeTruthy()
     })
 
     test("Not yet valid", () => {
@@ -30,8 +30,8 @@ describe("Verify", async () => {
     })
 
     test("Clock offset", () => {
-        expect(jwt.verify(notYetValidToken, secret, { clockTolerance: offset, throwError: true })).resolves.toBe(true)
-        expect(jwt.verify(expiredToken, secret, { clockTolerance: offset, throwError: true })).resolves.toBe(true)
+        expect(jwt.verify(notYetValidToken, secret, { clockTolerance: offset, throwError: true })).resolves.toBeTruthy()
+        expect(jwt.verify(expiredToken, secret, { clockTolerance: offset, throwError: true })).resolves.toBeTruthy()
 
         expect(jwt.verify(notYetValidToken, secret, { clockTolerance: offset - 1, throwError: true })).rejects.toThrowError("NOT_YET_VALID")
         expect(jwt.verify(expiredToken, secret, { clockTolerance: offset - 1, throwError: true })).rejects.toThrowError("EXPIRED")

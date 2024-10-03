@@ -1,3 +1,5 @@
+export type KeyUsages = "sign" | "verify"
+
 export function bytesToByteString(bytes: Uint8Array): string {
     let byteStr = ""
     for (let i = 0; i < bytes.byteLength; i++) {
@@ -39,9 +41,10 @@ export function base64UrlToArrayBuffer(b64url: string): ArrayBuffer {
 }
 
 export function textToBase64Url(str: string): string {
-    const encoder = new TextEncoder();
-    const charCodes = encoder.encode(str);
-    const binaryStr = String.fromCharCode(...charCodes);
+    const encoder = new TextEncoder()
+    const charCodes = encoder.encode(str)
+    const binaryStr = String.fromCharCode(...charCodes)
+
     return btoa(binaryStr).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
 }
 
@@ -49,7 +52,6 @@ export function pemToBinary(pem: string): ArrayBuffer {
     return base64StringToArrayBuffer(pem.replace(/-+(BEGIN|END).*/g, "").replace(/\s/g, ""))
 }
 
-type KeyUsages = "sign" | "verify";
 export async function importTextSecret(key: string, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
     return await crypto.subtle.importKey("raw", textToArrayBuffer(key), algorithm, true, keyUsages)
 }
