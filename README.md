@@ -100,7 +100,7 @@ Argument                 | Type                                | Status   | Defa
 `secret`                 | `string`, `JsonWebKey`, `CryptoKey` | required | -           | A string which is used to sign the payload.
 `options`                | `string`, `object`                  | optional | `HS256`     | Either the `algorithm` string or an object.
 `options.algorithm`      | `string`                            | optional | `HS256`     | See [Available Algorithms](#available-algorithms)
-`options.keyid`          | `string`                            | optional | `undefined` | The `keyid` or `kid` to be set in the header of the resulting JWT.
+`options.header`         | `object`                            | optional | `undefined` | Extend the header of the resulting JWT.
 
 
 #### `return`
