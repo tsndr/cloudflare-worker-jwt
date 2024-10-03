@@ -142,6 +142,7 @@ Returns the decoded token or `undefined`.
         typ: "JWT"
     },
     payload: {
+        sub: "1234",
         name: "John Doe",
         email: "john.doe@gmail.com"
     }
@@ -173,6 +174,7 @@ Returns an `object` containing `header` and `payload`:
         typ: "JWT"
     },
     payload: {
+        sub: "1234",
         name: "John Doe",
         email: "john.doe@gmail.com"
     }
