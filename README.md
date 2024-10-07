@@ -65,7 +65,7 @@ async () => {
     }, "secret")
 
     // Verify token
-    const verifiedToken = await verify(token, "secret") // false
+    const verifiedToken = await verify(token, "secret")
 
     // Abort if token isn't valid
     if (!verifiedToken)
