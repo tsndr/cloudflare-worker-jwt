@@ -25,7 +25,7 @@ npm i @tsndr/cloudflare-worker-jwt
 
 ```typescript
 async () => {
-    import jwt from "@tsndr/cloudflare-worker-jwt"
+    import { sign, verify } from "@tsndr/cloudflare-worker-jwt"
 
     // Create a token
     const token = await sign({
@@ -53,7 +53,7 @@ async () => {
 
 ```typescript
 async () => {
-    import jwt from "@tsndr/cloudflare-worker-jwt"
+    import { sign, verify } from "@tsndr/cloudflare-worker-jwt"
 
     // Create a token
     const token = await sign({
