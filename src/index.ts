@@ -1,3 +1,4 @@
+import type { SubtleCryptoImportKeyAlgorithm } from "@cloudflare/workers-types"
 import {
     textToArrayBuffer,
     arrayBufferToBase64Url,

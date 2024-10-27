@@ -1,3 +1,5 @@
+import type { SubtleCryptoImportKeyAlgorithm } from "@cloudflare/workers-types"
+
 export type KeyUsages = "sign" | "verify"
 
 export function bytesToByteString(bytes: Uint8Array): string {
