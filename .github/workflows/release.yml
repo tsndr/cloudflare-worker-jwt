@@ -1,0 +1,31 @@
+name: Release
+run-name: Release ${{ github.ref_name }}
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: latest
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Create release
+        run: gh release create ${{ github.ref_name }} --draft ${{ contains(github.ref_name, '-') && '--prerelease --latest=false' || '--latest' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

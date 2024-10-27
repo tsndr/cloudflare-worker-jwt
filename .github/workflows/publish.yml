@@ -1,8 +1,9 @@
 name: Publish
+run-name: Publish ${{ github.ref_name }}
 
 on:
   release:
-    types: [published]
+    types: [ published ]
 
 jobs:
   publish:
@@ -13,18 +14,27 @@ jobs:
         with:
           node-version: latest
           registry-url: https://registry.npmjs.org/
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Run tests
+        run: npm test
+
       - name: Build
         run: npm run build
+
       - name: Publish to npmjs
-        run: npm publish --tag latest --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --tag ${{ contains(github.ref_name, '-') && 'pre' || 'latest' }} --access public
+
       - uses: actions/setup-node@v3
         with:
+          node-version: latest
           registry-url: https://npm.pkg.github.com/
+
       - name: Publish to GPR
-        run: npm publish --tag latest --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish --tag ${{ contains(github.ref_name, '-') && 'pre' || 'latest' }} --access public
