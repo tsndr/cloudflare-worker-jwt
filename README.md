@@ -28,14 +28,14 @@ async () => {
     import jwt from "@tsndr/cloudflare-worker-jwt"
 
     // Create a token
-    const token = await sign({
+    const token = await jwt.sign({
         sub: "1234",
         name: "John Doe",
         email: "john.doe@gmail.com"
     }, "secret")
 
     // Verify token
-    const verifiedToken = await verify(token, "secret")
+    const verifiedToken = await jwt.verify(token, "secret")
 
     // Abort if token isn't valid
     if (!verifiedToken)
@@ -56,7 +56,7 @@ async () => {
     import jwt from "@tsndr/cloudflare-worker-jwt"
 
     // Create a token
-    const token = await sign({
+    const token = await jwt.sign({
         sub: "1234",
         name: "John Doe",
         email: "john.doe@gmail.com",
@@ -65,7 +65,7 @@ async () => {
     }, "secret")
 
     // Verify token
-    const verifiedToken = await verify(token, "secret")
+    const verifiedToken = await jwt.verify(token, "secret")
 
     // Abort if token isn't valid
     if (!verifiedToken)
