@@ -3,11 +3,11 @@ import {
     bytesToByteString,
     byteStringToBytes,
     arrayBufferToBase64String,
-    base64StringToArrayBuffer,
-    textToArrayBuffer,
+    base64StringToUint8Array,
+    textToUint8Array,
     arrayBufferToText,
     arrayBufferToBase64Url,
-    base64UrlToArrayBuffer,
+    base64UrlToUint8Array,
     textToBase64Url,
     pemToBinary,
     importTextSecret
@@ -18,7 +18,7 @@ describe("Converters", () => {
     const testByteArray = [ 99, 108, 111, 117, 100, 102, 108, 97, 114, 101, 45, 119, 111, 114, 107, 101, 114, 45, 106, 119, 116 ]
     const testUint8Array = new Uint8Array(testByteArray)
     const testBase64String = "Y2xvdWRmbGFyZS13b3JrZXItand0"
-    const testArrayBuffer = testUint8Array.buffer
+    const testArrayBuffer = testUint8Array
 
     test("bytesToByteString", () => {
         expect(bytesToByteString(testUint8Array)).toStrictEqual(testString)
@@ -33,11 +33,11 @@ describe("Converters", () => {
     })
 
     test("base64StringToArrayBuffer", () => {
-        expect(base64StringToArrayBuffer(testBase64String)).toStrictEqual(testArrayBuffer)
+        expect(base64StringToUint8Array(testBase64String)).toStrictEqual(testArrayBuffer)
     })
 
     test("textToArrayBuffer", () => {
-        expect(textToArrayBuffer(testString)).toStrictEqual(testUint8Array)
+        expect(textToUint8Array(testString)).toStrictEqual(testUint8Array)
     })
 
     test("arrayBufferToText", () => {
@@ -49,7 +49,7 @@ describe("Converters", () => {
     })
 
     test("base64UrlToArrayBuffer", () => {
-        expect(base64UrlToArrayBuffer(testBase64String)).toStrictEqual(testArrayBuffer)
+        expect(base64UrlToUint8Array(testBase64String)).toStrictEqual(testArrayBuffer)
     })
 
     test("textToBase64Url", () => {

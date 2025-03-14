@@ -1,7 +1,7 @@
 import {
-    textToArrayBuffer,
+    textToUint8Array,
     arrayBufferToBase64Url,
-    base64UrlToArrayBuffer,
+    base64UrlToUint8Array,
     textToBase64Url,
     importKey,
     decodePayload
@@ -169,7 +169,7 @@ export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payloa
     const partialToken = `${textToBase64Url(JSON.stringify({ ...options.header, alg: options.algorithm }))}.${textToBase64Url(JSON.stringify(payload))}`
 
     const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ["sign"])
-    const signature = await crypto.subtle.sign(algorithm, key, textToArrayBuffer(partialToken))
+    const signature = await crypto.subtle.sign(algorithm, key, textToUint8Array(partialToken))
 
     return `${partialToken}.${arrayBufferToBase64Url(signature)}`
 }
@@ -225,7 +225,7 @@ export async function verify<Payload = {}, Header = {}>(token: string, secret: s
 
         const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ["verify"])
 
-        if (!await crypto.subtle.verify(algorithm, key, base64UrlToArrayBuffer(tokenParts[2]), textToArrayBuffer(`${tokenParts[0]}.${tokenParts[1]}`)))
+        if (!await crypto.subtle.verify(algorithm, key, base64UrlToUint8Array(tokenParts[2]), textToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`)))
             throw new Error("INVALID_SIGNATURE")
 
         return decodedToken

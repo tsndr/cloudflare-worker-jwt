@@ -20,11 +20,11 @@ export function arrayBufferToBase64String(arrayBuffer: ArrayBuffer): string {
     return btoa(bytesToByteString(new Uint8Array(arrayBuffer)))
 }
 
-export function base64StringToArrayBuffer(b64str: string): ArrayBuffer {
-    return byteStringToBytes(atob(b64str)).buffer
+export function base64StringToUint8Array(b64str: string): Uint8Array {
+    return byteStringToBytes(atob(b64str))
 }
 
-export function textToArrayBuffer(str: string): ArrayBuffer {
+export function textToUint8Array(str: string): Uint8Array {
     return byteStringToBytes(str)
 }
 
@@ -36,8 +36,8 @@ export function arrayBufferToBase64Url(arrayBuffer: ArrayBuffer): string {
     return arrayBufferToBase64String(arrayBuffer).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
 }
 
-export function base64UrlToArrayBuffer(b64url: string): ArrayBuffer {
-    return base64StringToArrayBuffer(b64url.replace(/-/g, "+").replace(/_/g, "/").replace(/\s/g, ""))
+export function base64UrlToUint8Array(b64url: string): Uint8Array {
+    return base64StringToUint8Array(b64url.replace(/-/g, "+").replace(/_/g, "/").replace(/\s/g, ""))
 }
 
 export function textToBase64Url(str: string): string {
@@ -48,12 +48,12 @@ export function textToBase64Url(str: string): string {
     return btoa(binaryStr).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
 }
 
-export function pemToBinary(pem: string): ArrayBuffer {
-    return base64StringToArrayBuffer(pem.replace(/-+(BEGIN|END).*/g, "").replace(/\s/g, ""))
+export function pemToBinary(pem: string): Uint8Array {
+    return base64StringToUint8Array(pem.replace(/-+(BEGIN|END).*/g, "").replace(/\s/g, ""))
 }
 
 export async function importTextSecret(key: string, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
-    return await crypto.subtle.importKey("raw", textToArrayBuffer(key), algorithm, true, keyUsages)
+    return await crypto.subtle.importKey("raw", textToUint8Array(key), algorithm, true, keyUsages)
 }
 
 export async function importJwk(key: JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
