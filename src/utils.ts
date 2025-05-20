@@ -1,4 +1,10 @@
 export type KeyUsages = "sign" | "verify"
+export type x509Element = {
+    byteLength: number,
+    contents: Uint8Array,
+    raw: Uint8Array
+}
+
 
 export function bytesToByteString(bytes: Uint8Array): string {
     let byteStr = ""
@@ -48,6 +54,78 @@ export function textToBase64Url(str: string): string {
     return btoa(binaryStr).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
 }
 
+export function getElement(seq: Uint8Array): x509Element[] {
+    const result = []
+    let next = 0
+
+    while (next < seq.length) {
+        const nextPart = parseElement(seq.subarray(next))
+        result.push(nextPart)
+        next += nextPart.byteLength
+    }
+    return result
+}
+
+export function parseElement(bytes: Uint8Array): x509Element {
+    let position = 0
+
+    // tag
+    let tag = bytes[0] & 0x1f
+    position++
+    if (tag === 0x1f) {
+        tag = 0
+        while (bytes[position] >= 0x80) {
+            tag = tag * 128 + bytes[position] - 0x80
+            position++
+        }
+        tag = tag * 128 + bytes[position] - 0x80
+        position++
+    }
+
+    // length
+    let length = 0
+    if (bytes[position] < 0x80) {
+        length = bytes[position]
+        position++
+    } else if (length === 0x80) {
+        length = 0
+
+        while (bytes[position + length] !== 0 || bytes[position + length + 1] !== 0) {
+            if (length > bytes.byteLength) {
+                throw new TypeError('invalid indefinite form length')
+            }
+            length++
+        }
+
+        const byteLength = position + length + 2
+        return {
+            byteLength,
+            contents: bytes.subarray(position, position + length),
+            raw: bytes.subarray(0, byteLength),
+        }
+    } else {
+        const numberOfDigits = bytes[position] & 0x7f
+        position++
+        length = 0
+        for (let i = 0; i < numberOfDigits; i++) {
+            length = length * 256 + bytes[position]
+            position++
+        }
+    }
+
+    const byteLength = position + length
+    return {
+        byteLength,
+        contents: bytes.subarray(position, byteLength),
+        raw: bytes.subarray(0, byteLength),
+    }
+}
+
+export function x509toSpki(buf: Uint8Array): Uint8Array {
+    const tbsCertificate = getElement(getElement(parseElement(buf).contents)[0].contents)
+    return tbsCertificate[tbsCertificate[0].raw[0] === 0xa0 ? 6 : 5].raw
+}
+
 export function pemToBinary(pem: string): Uint8Array {
     return base64StringToUint8Array(pem.replace(/-+(BEGIN|END).*/g, "").replace(/\s/g, ""))
 }
@@ -68,6 +146,10 @@ export async function importPrivateKey(key: string, algorithm: SubtleCryptoImpor
     return await crypto.subtle.importKey("pkcs8", pemToBinary(key), algorithm, true, keyUsages)
 }
 
+export async function importX509PublicKey(key: string, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+    return await crypto.subtle.importKey("spki", x509toSpki(pemToBinary(key)), algorithm, true, keyUsages)
+}
+
 export async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
     if (typeof key === "object")
         return importJwk(key, algorithm, keyUsages)
@@ -80,6 +162,9 @@ export async function importKey(key: string | JsonWebKey, algorithm: SubtleCrypt
 
     if (key.includes("PRIVATE"))
         return importPrivateKey(key, algorithm, keyUsages)
+
+    if (key.includes("-----BEGIN CERTIFICATE-----"))
+        return importX509PublicKey(key, algorithm, keyUsages)
 
     return importTextSecret(key, algorithm, keyUsages)
 }
