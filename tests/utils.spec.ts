@@ -67,7 +67,7 @@ describe("Imports", () => {
         const testAlgorithm = { name: "HMAC", hash: { name: "SHA-256" } }
         const testCryptoKey = { type: "secret", extractable: true, algorithm: { ...testAlgorithm, length: 168 }, usages: ["verify", "sign"] }
 
-        expect(await importTextSecret(testKey, testAlgorithm, ["verify", "sign"])).toMatchObject(testCryptoKey)
+        await expect(importTextSecret(testKey, testAlgorithm, ["verify", "sign"])).resolves.toMatchObject(testCryptoKey)
     })
 
     test.todo("importJwk")
