@@ -143,7 +143,7 @@ const algorithms: JwtAlgorithms = {
  * @throws If there"s a validation issue.
  * @returns Returns token as a `string`.
  */
-export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKey | CryptoKey, options: JwtSignOptions<Header> | JwtAlgorithm = "HS256"): Promise<string> {
+export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKeyWithKid | CryptoKey, options: JwtSignOptions<Header> | JwtAlgorithm = "HS256"): Promise<string> {
     if (typeof options === "string")
         options = { algorithm: options }
 
@@ -183,7 +183,7 @@ export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payloa
  * @throws Throws integration errors and if `options.throwError` is set to `true` also throws `NOT_YET_VALID`, `EXPIRED` or `INVALID_SIGNATURE`.
  * @returns Returns the decoded token or `undefined`.
  */
-export async function verify<Payload = {}, Header = {}>(token: string, secret: string | JsonWebKey | CryptoKey, options: JwtVerifyOptions | JwtAlgorithm = "HS256"): Promise<JwtData<Payload, Header> | undefined> {
+export async function verify<Payload = {}, Header = {}>(token: string, secret: string | JsonWebKeyWithKid | CryptoKey, options: JwtVerifyOptions | JwtAlgorithm = "HS256"): Promise<JwtData<Payload, Header> | undefined> {
     if (typeof options === "string")
         options = { algorithm: options }
     options = { algorithm: "HS256", clockTolerance: 0, throwError: false, ...options }

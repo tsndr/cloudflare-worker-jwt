@@ -56,7 +56,7 @@ export async function importTextSecret(key: string, algorithm: SubtleCryptoImpor
     return await crypto.subtle.importKey("raw", textToUint8Array(key), algorithm, true, keyUsages)
 }
 
-export async function importJwk(key: JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+export async function importJwk(key: JsonWebKeyWithKid, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
     return await crypto.subtle.importKey("jwk", key, algorithm, true, keyUsages)
 }
 
@@ -68,7 +68,7 @@ export async function importPrivateKey(key: string, algorithm: SubtleCryptoImpor
     return await crypto.subtle.importKey("pkcs8", pemToBinary(key), algorithm, true, keyUsages)
 }
 
-export async function importKey(key: string | JsonWebKey, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
+export async function importKey(key: string | JsonWebKeyWithKid, algorithm: SubtleCryptoImportKeyAlgorithm, keyUsages: KeyUsages[]): Promise<CryptoKey> {
     if (typeof key === "object")
         return importJwk(key, algorithm, keyUsages)
 
