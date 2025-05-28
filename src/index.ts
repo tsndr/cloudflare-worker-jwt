@@ -12,9 +12,9 @@ if (typeof crypto === "undefined" || !crypto.subtle)
 
 /**
  * @typedef JwtAlgorithm
- * @type {"ES256" | "ES384" | "ES512" | "HS256" | "HS384" | "HS512" | "RS256" | "RS384" | "RS512"}
+ * @type {"none" | "ES256" | "ES384" | "ES512" | "HS256" | "HS384" | "HS512" | "RS256" | "RS384" | "RS512"}
  */
-export type JwtAlgorithm = "ES256" | "ES384" | "ES512" | "HS256" | "HS384" | "HS512" | "RS256" | "RS384" | "RS512"
+export type JwtAlgorithm = "none" | "ES256" | "ES384" | "ES512" | "HS256" | "HS384" | "HS512" | "RS256" | "RS384" | "RS512"
 
 /**
  * @typedef JwtAlgorithms
@@ -118,11 +118,12 @@ export type JwtVerifyOptions = {
  * @prop {JwtPayload} payload
  */
 export type JwtData<Payload = {}, Header = {}> = {
-    header?: JwtHeader<Header>
-    payload?: JwtPayload<Payload>
+    header: JwtHeader<Header>
+    payload: JwtPayload<Payload>
 }
 
 const algorithms: JwtAlgorithms = {
+    none:  { name: "none" },
     ES256: { name: "ECDSA", namedCurve: "P-256", hash: { name: "SHA-256" } },
     ES384: { name: "ECDSA", namedCurve: "P-384", hash: { name: "SHA-384" } },
     ES512: { name: "ECDSA", namedCurve: "P-521", hash: { name: "SHA-512" } },
@@ -143,7 +144,7 @@ const algorithms: JwtAlgorithms = {
  * @throws If there"s a validation issue.
  * @returns Returns token as a `string`.
  */
-export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKeyWithKid | CryptoKey, options: JwtSignOptions<Header> | JwtAlgorithm = "HS256"): Promise<string> {
+export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKeyWithKid | CryptoKey | undefined, options: JwtSignOptions<Header> | JwtAlgorithm = "HS256"): Promise<string> {
     if (typeof options === "string")
         options = { algorithm: options }
 
@@ -152,7 +153,7 @@ export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payloa
     if (!payload || typeof payload !== "object")
         throw new Error("payload must be an object")
 
-    if (!secret || (typeof secret !== "string" && typeof secret !== "object"))
+    if (options.algorithm !== "none" && (!secret || (typeof secret !== "string" && typeof secret !== "object")))
         throw new Error("secret must be a string, a JWK object or a CryptoKey object")
 
     if (typeof options.algorithm !== "string")
@@ -168,7 +169,10 @@ export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payloa
 
     const partialToken = `${textToBase64Url(JSON.stringify({ ...options.header, alg: options.algorithm }))}.${textToBase64Url(JSON.stringify(payload))}`
 
-    const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ["sign"])
+    if (options.algorithm === "none")
+        return partialToken
+
+    const key = secret instanceof CryptoKey ? secret : await importKey(secret!, algorithm, ["sign"])
     const signature = await crypto.subtle.sign(algorithm, key, textToUint8Array(partialToken))
 
     return `${partialToken}.${arrayBufferToBase64Url(signature)}`
@@ -183,7 +187,7 @@ export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payloa
  * @throws Throws integration errors and if `options.throwError` is set to `true` also throws `NOT_YET_VALID`, `EXPIRED` or `INVALID_SIGNATURE`.
  * @returns Returns the decoded token or `undefined`.
  */
-export async function verify<Payload = {}, Header = {}>(token: string, secret: string | JsonWebKeyWithKid | CryptoKey, options: JwtVerifyOptions | JwtAlgorithm = "HS256"): Promise<JwtData<Payload, Header> | undefined> {
+export async function verify<Payload = {}, Header = {}>(token: string, secret: string | JsonWebKeyWithKid | CryptoKey | undefined, options: JwtVerifyOptions | JwtAlgorithm = "HS256"): Promise<JwtData<Payload, Header> | undefined> {
     if (typeof options === "string")
         options = { algorithm: options }
     options = { algorithm: "HS256", clockTolerance: 0, throwError: false, ...options }
@@ -191,16 +195,18 @@ export async function verify<Payload = {}, Header = {}>(token: string, secret: s
     if (typeof token !== "string")
         throw new Error("token must be a string")
 
-    if (typeof secret !== "string" && typeof secret !== "object")
+    if (options.algorithm !== "none" && typeof secret !== "string" && typeof secret !== "object")
         throw new Error("secret must be a string, a JWK object or a CryptoKey object")
 
     if (typeof options.algorithm !== "string")
         throw new Error("options.algorithm must be a string")
 
-    const tokenParts = token.split(".")
+    const tokenParts = token.split(".", 3)
 
-    if (tokenParts.length !== 3)
-        throw new Error("token must consist of 3 parts")
+    if (tokenParts.length < 2)
+        throw new Error("token must consist of 2 or more parts")
+
+    const [ tokenHeader, tokenPayload, tokenSignature ] = tokenParts
 
     const algorithm: SubtleCryptoImportKeyAlgorithm = algorithms[options.algorithm]
 
@@ -223,9 +229,12 @@ export async function verify<Payload = {}, Header = {}>(token: string, secret: s
                 throw new Error("EXPIRED")
         }
 
-        const key = secret instanceof CryptoKey ? secret : await importKey(secret, algorithm, ["verify"])
+        if (algorithm.name === "none")
+            return decodedToken
 
-        if (!await crypto.subtle.verify(algorithm, key, base64UrlToUint8Array(tokenParts[2]), textToUint8Array(`${tokenParts[0]}.${tokenParts[1]}`)))
+        const key = secret instanceof CryptoKey ? secret : await importKey(secret!, algorithm, ["verify"])
+
+        if (!await crypto.subtle.verify(algorithm, key, base64UrlToUint8Array(tokenSignature), textToUint8Array(`${tokenHeader}.${tokenPayload}`)))
             throw new Error("INVALID_SIGNATURE")
 
         return decodedToken

@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest'
 import jwt, { JwtAlgorithm } from '../src/index'
 
 type Dataset = {
-    public: string
-    private: string
+    public?: string
+    private?: string
     token: string
 }
 
@@ -18,6 +18,9 @@ type Payload = {
 }
 
 const data: Data = {
+    'none': {
+        token: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ'
+    },
     'ES256': {
         public: '-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEVs/o5+uQbTjL3chynL4wXgUg2R9\nq9UU8I5mEovUf86QZ7kOBIjJwqnzD1omageEHWwHdBO6B+dFabmdT9POxg==\n-----END PUBLIC KEY-----',
         private: '-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgevZzL1gdAFr88hb2\nOF/2NxApJCzGCEDdfSp6VQO30hyhRANCAAQRWz+jn65BtOMvdyHKcvjBeBSDZH2r\n1RTwjmYSi9R/zpBnuQ4EiMnCqfMPWiZqB4QdbAd0E7oH50VpuZ1P087G\n-----END PRIVATE KEY-----',
@@ -72,7 +75,7 @@ const payload: Payload = {
     emoji: "😎"
 }
 
-const jwtRegex = /^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+$/
+const jwtRegex = /^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+(\.[a-zA-Z0-9\-_]+)?$/
 
 describe("Internal", () => {
     test.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s', async (algorithm, data) => {

@@ -84,13 +84,9 @@ export async function importKey(key: string | JsonWebKeyWithKid, algorithm: Subt
     return importTextSecret(key, algorithm, keyUsages)
 }
 
-export function decodePayload<T = any>(raw: string): T | undefined {
-    try {
-        const bytes = Array.from(atob(raw), char => char.charCodeAt(0));
-        const decodedString = new TextDecoder("utf-8").decode(new Uint8Array(bytes));
+export function decodePayload<T = any>(raw: string): T {
+    const bytes = Array.from(atob(raw), char => char.charCodeAt(0));
+    const decodedString = new TextDecoder("utf-8").decode(new Uint8Array(bytes));
 
-        return JSON.parse(decodedString);
-    } catch {
-        return
-    }
+    return JSON.parse(decodedString);
 }
