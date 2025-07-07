@@ -29,6 +29,10 @@ describe("Verify", async () => {
         await expect(jwt.verify(expiredToken, secret, { throwError: true })).rejects.toThrowError("EXPIRED")
     })
 
+    test("Expired with ignoreExpiration", async () => {
+        await expect(jwt.verify(expiredToken, secret, { throwError: true,ignoreExpiration:true })).resolves.toBeTruthy()
+    })
+
     test("Clock offset", async () => {
         await expect(jwt.verify(notYetValidToken, secret, { clockTolerance: offset, throwError: true })).resolves.toBeTruthy()
         await expect(jwt.verify(expiredToken, secret, { clockTolerance: offset, throwError: true })).resolves.toBeTruthy()
