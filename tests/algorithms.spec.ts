@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import jwt, { JwtAlgorithm } from '../src/index'
 
+type None = null
+const None: None = null;
+
 type Dataset = {
     public?: string
     private?: string
@@ -8,7 +11,7 @@ type Dataset = {
 }
 
 type Data = {
-    [key in JwtAlgorithm]: Dataset
+    [key in JwtAlgorithm]: Dataset | None
 }
 
 type Payload = {
@@ -69,6 +72,43 @@ const data: Data = {
 
 }
 
+const x509Data: Data = {
+    'ES256': {
+        public: '-----BEGIN CERTIFICATE-----\nMIIB3jCCAYWgAwIBAgIUQlhpv3rsNLZd8WKCGfSF9EoGRGwwCgYIKoZIzj0EAwIw\nRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGElu\ndGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yNTA1MjAwMDA1MTJaFw0zNTA1MTgw\nMDA1MTJaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYD\nVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwWTATBgcqhkjOPQIBBggqhkjO\nPQMBBwNCAARRb37kNOwHT8hmQANXb9nFBB0hN4ozs/D6OIuUbHhnrM6vCJp4/QQh\nkqtYqHLMEVFVyPgF4DC1jbb3LXSx/2Pbo1MwUTAdBgNVHQ4EFgQULmhwTkPT+Z4R\nwIWnYWt/fOf4hAswHwYDVR0jBBgwFoAULmhwTkPT+Z4RwIWnYWt/fOf4hAswDwYD\nVR0TAQH/BAUwAwEB/zAKBggqhkjOPQQDAgNHADBEAiBRaFt4VSLDFnFXECoDdWkP\nqWS1aCUushsHUydiRmNVtQIgbuCFS16FvriqqoQ4ZMDl/tDXM0lThynRnXwpGAzA\nfwY=\n-----END CERTIFICATE-----',
+        private: '-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQge4ohiXp55Hc+vLdw\nembkrWc8bnaw+QxhbxZkSq9qDBShRANCAARRb37kNOwHT8hmQANXb9nFBB0hN4oz\ns/D6OIuUbHhnrM6vCJp4/QQhkqtYqHLMEVFVyPgF4DC1jbb3LXSx/2Pb\n-----END PRIVATE KEY-----',
+        token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1vamkiOiLwn5iOIiwiaWF0IjoxNzQ3Njk5NzU2fQ.agMm4EfhJSzOziDvJHJzh4jJeBwpXbikteBWm92ubbzJuTdKvmKjRLse3LYbwkIu7zVMoxEX1evZ4DuJK0vIrQ'
+    },
+    'ES384': {
+        public: '-----BEGIN CERTIFICATE-----\nMIICGzCCAaKgAwIBAgIUSX7jRwa8LmzCqDweUmsMdcKQv3gwCgYIKoZIzj0EAwIw\nRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGElu\ndGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yNTA1MjAwMDEzMDVaFw0zNTA1MTgw\nMDEzMDVaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYD\nVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwdjAQBgcqhkjOPQIBBgUrgQQA\nIgNiAAQSKJFZoMHgO98n0Yf9VRussrExlVP5yINQKbERw14wt4iuHpO2Al/8iYRy\nb/STXU9+i1SiDIpTaIrZgT6mBiiOONEet8pYeLgM975XC6x2xb7lO1lkxM5+s556\nK0OBxN2jUzBRMB0GA1UdDgQWBBS7oTijYB5P0nQXB4By9ImhffhGpTAfBgNVHSME\nGDAWgBS7oTijYB5P0nQXB4By9ImhffhGpTAPBgNVHRMBAf8EBTADAQH/MAoGCCqG\nSM49BAMCA2cAMGQCMGOfdXe8TrjwfWXrmesJl7W1zNxOunjdgLrkgzMiHVoodzHK\nX4xM2DFDdLsjvOAtnwIwGmllbIe+mIPqp1d23uagVgGNucft9nkeYogE1Yd0KbTj\nzQWjdnBn9QheK7leXljb\n-----END CERTIFICATE-----',
+        private: '-----BEGIN PRIVATE KEY-----\nMIG2AgEAMBAGByqGSM49AgEGBSuBBAAiBIGeMIGbAgEBBDA3kphHlARvoxOXCQ1K\nWRUT9hG1vliknrnaVHfqyouUX5DB3OIIqjGqcSELmGOzly2hZANiAAQSKJFZoMHg\nO98n0Yf9VRussrExlVP5yINQKbERw14wt4iuHpO2Al/8iYRyb/STXU9+i1SiDIpT\naIrZgT6mBiiOONEet8pYeLgM975XC6x2xb7lO1lkxM5+s556K0OBxN0=\n-----END PRIVATE KEY-----',
+        token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzM4NCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1vamkiOiLwn5iOIiwiaWF0IjoxNzQ3NzAwMDY2fQ.8wU6oVrz54CnVJgu7XXizpciNdi42szWhFYjrPJ-468TK0QgB0UIZYQQDFuuerW4dBOhdGImEVTaNSOUvLG5O9z56jhVjzrkruXlS97bNt13mcbYp9VhOjd-_VwKP618'
+    },
+    'ES512': {
+        public: '-----BEGIN CERTIFICATE-----\nMIICZzCCAcigAwIBAgIUDkpDRdL8TYfuY4ZJpp9NCPzzKDswCgYIKoZIzj0EAwIw\nRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGElu\ndGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yNTA1MjAwMDE5MTBaFw0zNTA1MTgw\nMDE5MTBaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYD\nVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwgZswEAYHKoZIzj0CAQYFK4EE\nACMDgYYABAGyDmZpfuwHHz3OZQSKiCpIICzNk0z2CRyNjGwmT0ZpqYMz9VJ+YKGq\nNrCUg3gUjsyLPBTzFDpMhNsRx941eoKDEwF6Lm4P76wsRsIPLS5TVnpoYqRPBhBb\nWA9eCZA6PMEf4WqrKLJvDJmRHUmIoHPkifWsc2hVGYEWNOW2ozFonq1v6qNTMFEw\nHQYDVR0OBBYEFJZKQ4UbFIZxBesCFNMbFS/SDYVzMB8GA1UdIwQYMBaAFJZKQ4Ub\nFIZxBesCFNMbFS/SDYVzMA8GA1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDgYwA\nMIGIAkIBIHVjK/G7VTxfDl2RJt1qrUn24xGwWymlfDyKxRDippbhOamL9Bi2huSW\ntpWlDeQMPR2ryhA2oGRhYt1mUHHRIJcCQgHIZULh2j14rhGr0gLoywkauAqu1AZp\nMl3qo5mM+xZ24v62W8oScUKhCieTv/pCw2mpKmeQl/7sM8pqGsasU69LsQ==\n-----END CERTIFICATE-----\n\n',
+        private: '-----BEGIN PRIVATE KEY-----\nMIHuAgEAMBAGByqGSM49AgEGBSuBBAAjBIHWMIHTAgEBBEIA8I2+HsjOt7fUUQeM\n+1Y3ZJG/9mpWfEQSaC2qkq//haxfP13+VtmIa48LC+jndO3oIv8X0mM/FLTAo/pf\noKBV7dGhgYkDgYYABAGyDmZpfuwHHz3OZQSKiCpIICzNk0z2CRyNjGwmT0ZpqYMz\n9VJ+YKGqNrCUg3gUjsyLPBTzFDpMhNsRx941eoKDEwF6Lm4P76wsRsIPLS5TVnpo\nYqRPBhBbWA9eCZA6PMEf4WqrKLJvDJmRHUmIoHPkifWsc2hVGYEWNOW2ozFonq1v\n6g==\n-----END PRIVATE KEY-----',
+        token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzUxMiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1vamkiOiLwn5iOIiwiaWF0IjoxNzQ3NzAwNDE0fQ.Ad5I_HVCf9oalgPNxmOiOnTlMI82-deAtGtf7no5RzCxcireqsSLzGa7O6fqJgRaidr_B1yPnWnJXFjcUWPPIdfUAK0vRGfYelCqnfNEfQi62vPslbY5cvy6jKUWoA452mGriz8okEpuVUfXs0j9nWgz-MsaYjRHMy5Jlboas_i-oFbj'
+    },
+    'HS256': None,
+    'HS384': None,
+    'HS512': None,
+    'RS256': {
+        public: '-----BEGIN CERTIFICATE-----\nMIIDazCCAlOgAwIBAgIUWn8Saw8vLbchwq8WQbidoT3PxyYwDQYJKoZIhvcNAQEL\nBQAwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM\nGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yNTA1MTkyMzI0MjdaFw0zNTA1\nMTcyMzI0MjdaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEw\nHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwggEiMA0GCSqGSIb3DQEB\nAQUAA4IBDwAwggEKAoIBAQC6wgV6MrTXinqCvslHvGAiZEtZG57E8CMNaIHjmmV2\ndp9ReapnbBP7SE1YkcQhgfRrMO2hx/jFkRqskK3v+ozCBtnxLHMMORcOqRawh0aO\nsRFwMUXMej/KKwwGq1Ev8jrEDsOtj6BkkBPKuUMRR27CLiNQfj6nw4ZqobMJT4fv\nLJWC7miQC02S6M1u8g5+CdHiceBc3JAuYa6a1WysoN5EsArz3EWu2XSfkPRXxnOy\nm8QrE+xFFBNz+8EXmJafz1cj7vCMYaUOHi/mjwrNafY4I7yjsVYu1BEkerPBq76r\no42fL3dp0XB/HY02bRgPp9JgibbXkREXnRGne8gR0TB7AgMBAAGjUzBRMB0GA1Ud\nDgQWBBSiRKkyCEJS49EQuTDdEP9kYEgcDDAfBgNVHSMEGDAWgBSiRKkyCEJS49EQ\nuTDdEP9kYEgcDDAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQCC\ntdxiFpKo+nyqcraz1jBhbiX9lU28+M/ioyxQkUOjWriaN2hcHqi3zT1ZgUuRglRX\nfejUUt6GjXG9vWvZMT9ggraU3Y67AJgnuxB/J/RcFqVtuQmTWChF/a9atf2m/hG2\nt9MVBsUJAF9QHWgIYbf3XgLi1JZ/SCZZFZGIna5JvuEVaK2RMs+aRw5vdG/NOT4o\nY2mS3KZM9+dRsFkawwOFAnrKwxdynfBLIbb5MXwSiuADbSt0DK8x6QH6i/W+592P\ns9dbTrH2dqDeA1faZG6FyM0dybUiDhzMlNVZCnEgaGfWjccvFjR2kjVrPxPhzEXM\nyofI2ekjtzP33iedTi7Z\n-----END CERTIFICATE-----',
+        private: '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC6wgV6MrTXinqC\nvslHvGAiZEtZG57E8CMNaIHjmmV2dp9ReapnbBP7SE1YkcQhgfRrMO2hx/jFkRqs\nkK3v+ozCBtnxLHMMORcOqRawh0aOsRFwMUXMej/KKwwGq1Ev8jrEDsOtj6BkkBPK\nuUMRR27CLiNQfj6nw4ZqobMJT4fvLJWC7miQC02S6M1u8g5+CdHiceBc3JAuYa6a\n1WysoN5EsArz3EWu2XSfkPRXxnOym8QrE+xFFBNz+8EXmJafz1cj7vCMYaUOHi/m\njwrNafY4I7yjsVYu1BEkerPBq76ro42fL3dp0XB/HY02bRgPp9JgibbXkREXnRGn\ne8gR0TB7AgMBAAECggEAAvpXBgTK92jg3TbXlMo/Ki05OlmDZZaCqJMTByMOHR51\nGeJ7whxqESas/Q2N+A7Pa+oiz+KVZ+kRaNEBxQLUvb9IOF1CFF7QrE4r63KswFe4\ndHaEq2cDn2CiV3Th3YbaQwgNPLY+k3vspN3hYOQnsvbzXzQ0IY6vlQGxDiPzge/I\nFQv/NHofSE2t+8vn17l0X+/6qGyxX8gx2q0V35BCR8fH7FIq18MvNpiT+zfckM81\nT1R28TZ+zE/K+56E75GYqudIISuGxhSV8b6vvHsj0l6/geXDAamh64yb07X1woEp\ndRJcrJvOxPTEktIpLSh1ZqlJzq3skaOXywEWWZqE+QKBgQDfJOvlPOIS1ClY4JpK\nv+W0582qHQ3sOOguUPvcR2/h0b/P7EbfSd6b1+I1cDDZUKvLl1UkGNUscQb06mFl\ndyKPkAh76eUVMRtp1bSOu7jLfPjjJpYWqDMsbf50TMMNBPTR+R7unBvaTnSndD1g\nC7M7vtHdhXrYmod7z46U7HlYzwKBgQDWQZK+AMTZI+6qVYkX3DNHBNgAQW+jmPqx\nULlWbASvBuOQgFWqg9cWE+vZKr8OlPKi8tnoV/0/AVdzZPJ2dy6PHF1CyzyjEVj/\nzJh33Q1y38YxxFQbKlxm/t5kH/RWZ/zjxHxi1uZ9QqgIZqFja6ty1fljQAY8g+ds\niosfYOeAlQKBgQC7T73o5wuK7KdsoNVDrAQBsJeWld8LDNXxky9oQFstfyl5Owhf\nBR4lSbnsS6nlse8T7oucym+fZ52EV368cp4DTs+gXL1c5aTyWV7Addnwjo5J9ykE\nCdszD34KWClfM2rjGzCY8Vf8D+Gic1PV3NxuaYa3YgW17zmNd7RjVIGkRwKBgQC8\nA5Ln1Pjoq1V2d9Tz8TG2MpPxtXpoD4h+LR5Wrjd1+A+d8GA8X7FRGG4whghenWpG\nf+GkuAHtVhoNkxoJxxA+WV+li39MgZ6d6kYpePuiQKhFZ8l+hS/M2f8B0eCyKlKK\n9RNKENb2OJYHuTgKbKNpBEfyRm6yj/V3FCR9hqXf+QKBgENS2N6AcVHekAsrR3Qe\nlPuGTVJlNMSj0YknanuQV9e6jKlQjlBx/MJn5sM3/fSXZp1UrChrzEH/tgWnsZ1V\nYb7zvniMQ0U+vgwxGsO0VkiLbMjjvfL5Qs+xDGY8GKMKsSJTbjbfYXC6BA5ARwzh\nkrflD4ThQtPkLNB1rq8a1toJ\n-----END PRIVATE KEY-----',
+        token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1vamkiOiLwn5iOIiwiaWF0IjoxNzQ3Njk4MDU3fQ.RE2XHzayoPHw0hzlMO01Eyyw2u2EZdhsN4E-lhp8cw-nkOv-o0_zYrVk-PwdYwgPazr_5FbUylRLC01kw0mnxFHwBzC1V-WzJ_DVye84HRp57mxvuUfCxhqf5hFwI1OAP2DixFo7jHCQTcbBROG1wf067lA2EmHoU6Ihh31F4y_wyHK9bhOSOz4i4_O2FgLVbXqEFtzc89_AjR8ftoT19k4_UpxWQ3oaC0YCrPx8xNf_vp_wH-gQec_eR-49xwhGKBwndrJou8XxrOHFwLWjCbbYpQ8IuYDFWLj2btDd7y_giwpbD_D0oAvyrH7YDP5EWTnpJGVx1RoZOC3_ArnWEA'
+    },
+    'RS384': {
+        public: '-----BEGIN CERTIFICATE-----\nMIIDazCCAlOgAwIBAgIUbRlnvKHM5kZha3Hg9X1twM6PJCgwDQYJKoZIhvcNAQEM\nBQAwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM\nGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yNTA1MTkyMzQ3MTZaFw0zNTA1\nMTcyMzQ3MTZaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEw\nHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwggEiMA0GCSqGSIb3DQEB\nAQUAA4IBDwAwggEKAoIBAQCxf9El30KusDStv/Ik4QvQQ2lBHU9kMjqw/Oky+e5m\n4cXbOSn7t6F4baaXyYQNwCdTyNIeh9ip/S0R9jqnzkc9X6tFHDw/FZ7g2ZPeZumo\nmRGVmrcIHoO0258mxlmhxIRLjYswP9T+toaJUprOBsIfJkLlf+vss8EWR4NaYvh8\nfrrzYFgw8gVMlVAacs2rYSMoselEsKBYhnVLzzIF8jEgEag7xouM2CNuf6vol63w\nyZTvxxt8Ab3A+OLIZ5UMc9k2AnJTyakgPF+tKSZ3FJvGbARGDNu9M3MaRjCEUwQ+\nFNXlh69e4m3dK+REMZGLVY1jr2t5jBYvKj/IxkHvbeXrAgMBAAGjUzBRMB0GA1Ud\nDgQWBBR4ZAo+W5FNzeKWgJ2rmuYhA9XfXzAfBgNVHSMEGDAWgBR4ZAo+W5FNzeKW\ngJ2rmuYhA9XfXzAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBDAUAA4IBAQAf\n1aYexjsTY3YpFgJLhdQunFmcZIEO8SMQBRl2T0qTGma1j9hHQX2CQnakc9Cc064E\nwkkV7YwFaAA6IEAueHNTEomaigwkc3/I4Ol1pYMh0JN5fBnGU/9pnrvpl917TCec\nfLWeIAX3xb4GXyCTfAk5UnF37aMa6C4eyY63CQfxtMxt/eYgXrOoLABEr2VRAmTR\nBuFaZxrr4Iv6hE7rEaxDst1cIRW5gdV50wgGUD8haEE0vpqYOlRx5V6Y0C8nxeP0\nbEKH+t883Wla6Dko1Cq0s/0hzw+SpuFCB49dnQRDnoBfHXcuvQl3enqyufg2bkPI\nO1XYtEz5QVwdDuvP0fcy\n-----END CERTIFICATE-----',
+        private: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCxf9El30KusDSt\nv/Ik4QvQQ2lBHU9kMjqw/Oky+e5m4cXbOSn7t6F4baaXyYQNwCdTyNIeh9ip/S0R\n9jqnzkc9X6tFHDw/FZ7g2ZPeZumomRGVmrcIHoO0258mxlmhxIRLjYswP9T+toaJ\nUprOBsIfJkLlf+vss8EWR4NaYvh8frrzYFgw8gVMlVAacs2rYSMoselEsKBYhnVL\nzzIF8jEgEag7xouM2CNuf6vol63wyZTvxxt8Ab3A+OLIZ5UMc9k2AnJTyakgPF+t\nKSZ3FJvGbARGDNu9M3MaRjCEUwQ+FNXlh69e4m3dK+REMZGLVY1jr2t5jBYvKj/I\nxkHvbeXrAgMBAAECggEAPcMP73GkLky5x8uGYja8eZc7RKECQwcHTRZzvn0g60Oc\nKQ/W//OBh/n/gclo3bAC/zBdjKoQRfYGfL2E42bveveTDNUqUXkgc3TB8x00KKo6\naCgRkA2uHnxdAIz8G0HaFsAFsqBDaO3yGk5X92B6o4QYuuqsGQzjHvF7TzQo6ohJ\nIyoAKi0LdTH78GjrbXWHAXaGbebyaDTTsRFl0LMsvrikdz4WRyFYXBM/Ghyz9Itx\nlKxlYLWJs7bgH6o1rtiwIBp0rWr4h/1ARFEuv5UEg4kt+2YkEQldV4S4xTOrvZ4L\nUnzozkC45+A3e5fkapGE8Gyi75PpfDI4aRlQ9NJJoQKBgQDtqSYyJ/3LUmyoF+1V\n9pN3TZHeOo9A1AytDNuv2DIHtlalpnVI/KL+0Q2FKTcuywlwm22cOI8xm88dC+J+\nwm80PVJIuaZlrL7VLLtohfNVd7+gqI3a6Et1RWu4D21rdn4hD+XXQ7bAbAlpIUlP\nReNVLdk9OdCK1CnYPo4oCWHc9wKBgQC/MjaE04ESwCBKlPHp3xe2pPQJu4g+4akz\n0MnZigSf8HkZfF3n7rxPnhQ4eDSlklYNyUIrMKUJrw7gYY/wVUM1MgwHNO1bN5zh\npL11MC2qzBKHk8Ae4ccYRS5ZRXkNYcU3gBYzDAVLLzPSQMaUmSvQo5C4gdhFcCek\n4xDJZ+tFrQKBgCI29tvDrCMIY8IzZ6S3kfVcAoMG1TbVEFodfscrDdDUbFb+xuXS\nETk0KYkhLOOcsWg3yCj0b5EJyGB7JIlxPoc7yMvVhmIe435XKUfb+PM2AS2E9p8s\nUCi67M4b0nnlHjVuT32VLws2wogTFbXG7vqFVkAdQauq7bdHEjorV55zAoGAeohi\nulOWZ/7rcwDr3PeWCf7DS619Dteuib+obRtwBVSnN7cls6uj0d68lMgs7WPQdLtk\nBawCSSeBADpmdh8emGv/m2rHJ2uHxnC+3ujGi6yHv43oVaJa52oG3z2P7AyZyQz0\nrThp+BpDOt86pSdZFjiNWkIU6cOMFLdVHc7U0G0CgYEAxXTlNdHFXcwh7zkCzw1W\nS3DWEPKjhxa+YzOTJ9SuCfVDz+roJQeXAoHsHWVJ6TETcBK+ROMDCuG9shPEktXT\nik5lC2BbdnKil3MwjCH/0Z60AzYthpN6rTJ9gqxEMACc/+C8ufjRxvTIQf4uzAyT\nXQjwQ/J4z1Qa2uqa32Lm7Bc=\n-----END PRIVATE KEY-----',
+        token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzM4NCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1vamkiOiLwn5iOIiwiaWF0IjoxNzQ3Njk4NTc0fQ.S1yZ6uAZk9VcQN5rPpQ_EjjQW6j5XK-ZvqdBiAOeZ61CjbxmmMwDQWT1TEFJ-ZIyvzKmufFX0WJUc3BybpmtJNqFEnBCAq2LQCEebaW-g2dVb9UM4yzUuhOKoxvG1Sj6Fp_qaNVvscy797ziHnOKFv6kI09pLwYpQv26WcPA8-1OL1nXLck5qRtp3RkFhLxLF5GqtLYDWTnuYRd-FmNfMynsFWcdkBwUloxB3CPIttOUQjfn-2LbWgjV52pJLK1wAet0HPtKeI9zZ5aOE98QjP4wunM8yyDcXaxnv7wFGWHRqLhJnNctSyYXbYqrWlNlHmQJ_cLIqsgXGcGx54pBqQ'
+    },
+    'RS512': {
+        public: '-----BEGIN CERTIFICATE-----\nMIIDazCCAlOgAwIBAgIUNoDITvuNrDmTPgjFztbxhZsol9wwDQYJKoZIhvcNAQEN\nBQAwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM\nGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yNTA1MTkyMzUxMTRaFw0zNTA1\nMTcyMzUxMTRaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEw\nHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwggEiMA0GCSqGSIb3DQEB\nAQUAA4IBDwAwggEKAoIBAQCOw8UdWsdAqUzsFOx0rpINIqQVIGkAerHUldHFREcK\nyQ9g/0HvUtqkre37Y47VvOJbkON7deTO0xZp5rdoVSdYrsCW9NiXQwy8CQ3Qup1t\nqs3+qvqzz9iQnZJdWdlU0NmKTyXoxmX0YDw1uzUlGKfLKPHAc+gWIaJbPL0OvWLF\nttAJg5z1N8donshm/ZHtx1JHqBQbqnUQ7rpeY7KGDN9PXskk56M8kFyJ3rNWgFXy\nRleL7J14qEImDh3PMinBSu2LLIWUw5nQvzUlSqkgD6nlq62c2zX+0k1iQENIxU1j\nTsr3Dt1gMVwOcCRA4/A5uFUul3Ov2NeUp9gwRFbRS58LAgMBAAGjUzBRMB0GA1Ud\nDgQWBBRVBGM42CntgVk/QgR9vvvPcngy6zAfBgNVHSMEGDAWgBRVBGM42CntgVk/\nQgR9vvvPcngy6zAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBDQUAA4IBAQBm\nSkqQgt493n2N6wRtUkAnnXFKCndLqImKD+FpoNPEZInGKx3h5gaQKrMRH+HiKYAc\nJDOWC+ccFQDZseOji7rjXMAY5RGZ8edyeWS1917J2MXr2n3dRwHTnJmiBD4mX2Ih\nInJF8ObFcRcGgYu8Z9iv+wnI7DOf/eD9eRxmJQtz2f+uSIRIWhkYVqyrGYnQ9zKn\n+y8rLjCwBvdf88AGa8kXsxBz4MKZJmW4ZIY1h4MAOFAIlHg/FYPAUJY7cLyuh3tG\nuOjr78lHH63xdJmgLUgsSxWd/luQt38h/1qjYBblGLHe4/lLxCDbF0eq4Vwme1MH\nrw7Nle32bAcHtI74C0M7\n-----END CERTIFICATE-----',
+        private: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCOw8UdWsdAqUzs\nFOx0rpINIqQVIGkAerHUldHFREcKyQ9g/0HvUtqkre37Y47VvOJbkON7deTO0xZp\n5rdoVSdYrsCW9NiXQwy8CQ3Qup1tqs3+qvqzz9iQnZJdWdlU0NmKTyXoxmX0YDw1\nuzUlGKfLKPHAc+gWIaJbPL0OvWLFttAJg5z1N8donshm/ZHtx1JHqBQbqnUQ7rpe\nY7KGDN9PXskk56M8kFyJ3rNWgFXyRleL7J14qEImDh3PMinBSu2LLIWUw5nQvzUl\nSqkgD6nlq62c2zX+0k1iQENIxU1jTsr3Dt1gMVwOcCRA4/A5uFUul3Ov2NeUp9gw\nRFbRS58LAgMBAAECggEAFLZiGd+qlSmFikzWKhmNAVCGILXf4LIXAcIuDyItnRV4\nNeONXoTqnsYd3FaLNFxKikFWQk+46f7QZiiTHGpvonCmwAqhhSnfpkTkAbqeuM31\nQ/OXcCYBWVMwbHsVdQuLPC3pJevpgnpsfIPUHTUwsYttA4sYCrnyKFgtZP7ks81v\nZs9/eD+THkQ5c7Bzy4IPat/OFKAOO/nAu0bMihMe9IIYVMSTuCLfDYU/LGJCcdxv\nCJCncGWI76uEZuD2CeXwxJn549sGwnv5YYCgOn9zRk/H1D2Epo15TblV5YYW+1go\nJze5dP3y0KFFfRU/dryL1vz9MbS9gWaXC2pQ/JXmaQKBgQDHnE3mVKmnEOejKdt3\nMJPWoHZp0rfwf3WnfW8HiLu8oT14B1ug9gDvVoohLBfbUxOw5RfPHvGid8c+r5bF\nJKQCUqJwfIFx/dKnTLEuR3fEEcceAJKeKlbpeh6eeNS+TaD1tMeAp5cPNnT7UDVH\nHBormSJB0wVDzFLyTZfEVFFeowKBgQC3GGoooZO9OIzlPgPsPfPAOxnI2/oS6UqH\nlwesIx+KTbaRD0VEDgMw7v0VnqIAsl8FPIwemML6PUbyKD6QpCxlS02xDINCfNKz\nlL3H7UHirxlw26PvuzAVJMLSibHbU66JodO/1jjQENRKpzjdqcj5cT/TeFHzC64U\n2sezdaTMeQKBgFWdD7hjxaQ3VvKfiFb1yeL7Te6Th3sqX/8niJCVr9f23FN37G/8\nM2h0GKijrdPPLRnpGK4oWoFRmG6lhyglUAcDBFL0w9xtfoVtGm18D71T1rBilIAs\nLrzTOQDFWJIK36ejExJ2Tw8iT0hfHYrTXdInSw8qgA6VO1pbt2VouMG7AoGBAI8f\n+Kw2UiTSNeFlbu+XJhmYmXlX684oq2f+ebLn6dnVEeenBkBCq9/ukcv6qyzcQkb3\no5ivVYsDp5fYOcAbddDg4qSJ4Xlx1csndIr6PkyTD9IW/7mAm/+LMvgdRvjqGz/f\nToVhUhvja+/HdD5iYIYNLxWBsp3I/ZWzx/PS/LYRAoGAFnmfXhQrD45C8OPkEjq/\npPop7n1iUZLIU0U74lZl+6M66Qx9RBllLZDyxld5U7ZphOxg57RUudlfcobZ/00r\n85yywS1+o57N8+ZUbhciWKv7a1vmWeHIT4ydfae/ccit6ZlOzz2E/PVIhBpYpR56\nUc+qR6nTlgf3mUEPBiHSi5s=\n-----END PRIVATE KEY-----',
+        token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1vamkiOiLwn5iOIiwiaWF0IjoxNzQ3Njk4NzY3fQ.G3NUX0FiY_2520btD5gYInZ_sc4NqXJcb_4mXIhooLvghMa7swvWAWXLJZDqlvgaYuKzgnxRUCWOqGugEJVsH3eKTmGANLd4S5vEOdf7QEJWug9EuCTR6D5iwkbqxgpwKDSmJf7Ygk2Qx3GwK2cF3J8gzxt5qduH-V9xOZh3Yi27NXGaneJHhaiLWdggUtaJ_6i2Lm9Cir61QFm71h2Omc6cGFFIBPzHsQDW3O63piJ3rQdOs4v3alo1LZx-NiBMy04aUWUAUHmD-gyUPGwIlqUJboFVTUAyruOIkiJGL8q_OEtQlNlgNXzaTIUbwc4DlfxCy__J3lG9teHKI35fdw'
+    }
+
+}
+
 const payload: Payload = {
     sub: "1234567890",
     name: "John Doe",
@@ -77,31 +117,47 @@ const payload: Payload = {
 
 const jwtRegex = /^[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+(\.[a-zA-Z0-9\-_]+)?$/
 
-describe("Internal", () => {
-    test.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s', async (algorithm, data) => {
-        const token = await jwt.sign<Payload>(payload, data.private, algorithm)
-        expect(token).toMatch(jwtRegex)
+const privateKeyTest = async (algorithm: JwtAlgorithm, data: Dataset|None) => {
+    if( data == None ) return
+    const token = await jwt.sign<Payload>(payload, data.private, algorithm)
+    expect(token).toMatch(jwtRegex)
 
-        const decoded = jwt.decode<Payload>(token)
-        expect(decoded.payload).toMatchObject(payload)
+    const decoded = jwt.decode<Payload>(token)
+    expect(decoded.payload).toMatchObject(payload)
 
-        const verified = await jwt.verify(token, data.public, algorithm)
-        expect(verified).toBeTruthy()
+    const verified = await jwt.verify(token, data.public, algorithm)
+    expect(verified).toBeTruthy()
+}
+
+const publicKeyTest = async (algorithm: JwtAlgorithm, data: Dataset|None) => {
+    if( data == None ) return
+    const decoded = jwt.decode<Payload>(data.token)
+    expect({
+        sub: decoded.payload?.sub,
+        name: decoded.payload?.name,
+    }).toMatchObject({
+        sub: payload.sub,
+        name: payload.name
     })
+
+    const verified = await jwt.verify(data.token, data.public, algorithm)
+    expect(verified).toBeTruthy()
+}
+
+// spki & pkcs8 tests
+describe("Internal", () => {
+    test.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s',(algorithm, data) => privateKeyTest(algorithm,data))
 })
 
 describe("External", async () => {
-    test.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s', async (algorithm, data) => {
-        const decoded = jwt.decode<Payload>(data.token)
-        expect({
-            sub: decoded.payload?.sub,
-            name: decoded.payload?.name,
-        }).toMatchObject({
-            sub: payload.sub,
-            name: payload.name
-        })
+    test.each(Object.entries(data) as [JwtAlgorithm, Dataset][])('%s',(algorithm, data) => publicKeyTest(algorithm, data))
+})
 
-        const verified = await jwt.verify(data.token, data.public, algorithm)
-        expect(verified).toBeTruthy()
-    })
+// x509 test
+describe("x509 Internal", () => {
+    test.each(Object.entries(x509Data) as [JwtAlgorithm, Dataset][])('%s',(algorithm, data) => privateKeyTest(algorithm,data))
+})
+
+describe("x509 External", async () => {
+    test.each(Object.entries(x509Data) as [JwtAlgorithm, Dataset][])('%s',(algorithm, data) => publicKeyTest(algorithm, data))
 })
