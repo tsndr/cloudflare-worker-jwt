@@ -141,7 +141,7 @@ const algorithms: JwtAlgorithms = {
  * @param payload The payload object. To use `nbf` (Not Before) and/or `exp` (Expiration Time) add `nbf` and/or `exp` to the payload.
  * @param secret A string which is used to sign the payload.
  * @param [options={ algorithm: "HS256", header: { typ: "JWT" } }] The options object or the algorithm.
- * @throws If there"s a validation issue.
+ * @throws If there's a validation issue.
  * @returns Returns token as a `string`.
  */
 export async function sign<Payload = {}, Header = {}>(payload: JwtPayload<Payload>, secret: string | JsonWebKeyWithKid | CryptoKey | undefined, options: JwtSignOptions<Header> | JwtAlgorithm = "HS256"): Promise<string> {
