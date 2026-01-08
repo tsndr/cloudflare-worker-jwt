@@ -43,7 +43,13 @@ export function base64UrlToUint8Array(b64url: string): Uint8Array {
 export function textToBase64Url(str: string): string {
     const encoder = new TextEncoder()
     const charCodes = encoder.encode(str)
-    const binaryStr = String.fromCharCode(...charCodes)
+    let binaryStr = ""
+
+    const CHUNK_SIZE = 0x8000
+    
+    for (let i = 0; i < charCodes.length; i += CHUNK_SIZE) {
+        binaryStr += String.fromCharCode(...charCodes.subarray(i, i + CHUNK_SIZE))
+    }
 
     return btoa(binaryStr).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
 }
