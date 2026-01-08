@@ -75,10 +75,10 @@ export async function importKey(key: string | JsonWebKeyWithKid, algorithm: Subt
     if (typeof key !== "string")
         throw new Error("Unsupported key type!")
 
-    if (key.includes("PUBLIC"))
+    if (/-----BEGIN [A-Z0-9- ]*PUBLIC KEY-----/.test(key))
         return importPublicKey(key, algorithm, keyUsages)
 
-    if (key.includes("PRIVATE"))
+    if (/-----BEGIN [A-Z0-9- ]*PRIVATE KEY-----/.test(key))
         return importPrivateKey(key, algorithm, keyUsages)
 
     return importTextSecret(key, algorithm, keyUsages)
