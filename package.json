@@ -30,10 +30,14 @@
   },
   "homepage": "https://github.com/tsndr/cloudflare-worker-jwt#readme",
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250724.0",
+    "@cloudflare/workers-types": "^5.20260726.1",
     "@edge-runtime/vm": "^5.0.0",
-    "esbuild": "^0.25.8",
-    "typescript": "^5.8.3",
-    "vitest": "^3.2.4"
+    "esbuild": "^0.28.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "fsevents@2.3.3": true
   }
 }
