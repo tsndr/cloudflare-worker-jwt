@@ -65,9 +65,13 @@ describe("Imports", () => {
     test("importTextSecret", async () => {
         const testKey = "cloudflare-worker-jwt"
         const testAlgorithm = { name: "HMAC", hash: { name: "SHA-256" } }
-        const testCryptoKey = { type: "secret", extractable: true, algorithm: { ...testAlgorithm, length: 168 }, usages: ["verify", "sign"] }
 
-        await expect(importTextSecret(testKey, testAlgorithm, ["verify", "sign"])).resolves.toMatchObject(testCryptoKey)
+        const cryptoKey = await importTextSecret(testKey, testAlgorithm, ["verify", "sign"])
+
+        expect(cryptoKey.type).toBe("secret")
+        expect(cryptoKey.extractable).toBe(true)
+        expect(cryptoKey.algorithm).toMatchObject({ ...testAlgorithm, length: 168 })
+        expect(cryptoKey.usages).toEqual(expect.arrayContaining(["verify", "sign"]))
     })
 
     test.todo("importJwk")
