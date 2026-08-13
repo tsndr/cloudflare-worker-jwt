@@ -13,8 +13,8 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           registry-url: https://registry.npmjs.org/
@@ -54,7 +54,7 @@ jobs:
         run: npm publish --tag ${{ contains(github.ref_name, '-') && 'pre' || 'latest' }} --provenance --access public
         continue-on-error: true
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           registry-url: https://npm.pkg.github.com/
