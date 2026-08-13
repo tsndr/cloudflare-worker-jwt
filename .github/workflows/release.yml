@@ -13,8 +13,16 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
-          node-version: latest
+          node-version: lts/*
           registry-url: https://registry.npmjs.org/
+
+      - name: Verify tag matches package.json version
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version v$version"
+            exit 1
+          fi
 
       - name: Install dependencies
         run: npm ci
@@ -26,6 +34,6 @@ jobs:
         run: npm run build
 
       - name: Create release
-        run: gh release create ${{ github.ref_name }} --draft --generate-notes ${{ contains(github.ref_name, '-') && '--prerelease --latest=false' || '--latest' }}
+        run: gh release create "$GITHUB_REF_NAME" --draft --generate-notes ${{ contains(github.ref_name, '-') && '--prerelease --latest=false' || '--latest' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

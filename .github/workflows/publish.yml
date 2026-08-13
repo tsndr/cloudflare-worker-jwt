@@ -16,8 +16,16 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
-          node-version: latest
+          node-version: lts/*
           registry-url: https://registry.npmjs.org/
+
+      - name: Verify tag matches package.json version
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version v$version"
+            exit 1
+          fi
 
       - name: Install dependencies
         run: npm ci
@@ -28,16 +36,36 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify package contents
+        run: |
+          npm pack --silent > /dev/null
+          tar tzf ./*.tgz | sed 's|^package/||' | sort > packed.txt
+          cat packed.txt
+          for file in index.js index.d.ts; do
+            if ! grep -qxF "$file" packed.txt; then
+              echo "::error::$file is missing from the package tarball"
+              exit 1
+            fi
+          done
+          rm -f packed.txt ./*.tgz
+
       - name: Publish to npmjs
+        id: npmjs
         run: npm publish --tag ${{ contains(github.ref_name, '-') && 'pre' || 'latest' }} --provenance --access public
         continue-on-error: true
 
       - uses: actions/setup-node@v4
         with:
-          node-version: latest
+          node-version: lts/*
           registry-url: https://npm.pkg.github.com/
 
       - name: Publish to GPR
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm publish --tag ${{ contains(github.ref_name, '-') && 'pre' || 'latest' }} --access public
+
+      - name: Fail if publishing to npmjs failed
+        if: always() && steps.npmjs.outcome == 'failure'
+        run: |
+          echo "::error::Publishing to npmjs failed"
+          exit 1

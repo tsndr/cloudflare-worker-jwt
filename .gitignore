@@ -148,3 +148,6 @@ dist
 /index.d.ts
 /utils.js
 /utils.d.ts
+
+# Stray declarations emitted next to sources by a misconfigured tsc
+src/**/*.d.ts

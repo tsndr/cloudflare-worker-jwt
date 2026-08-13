@@ -5,11 +5,16 @@
   "type": "module",
   "exports": "./index.js",
   "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
   "engine": {
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc & esbuild --bundle --target=esnext --platform=neutral --outfile=index.js src/index.ts & wait",
+    "build": "tsc && esbuild --bundle --target=esnext --platform=neutral --outfile=index.js src/index.ts",
+    "prepack": "npm run build",
     "test": "vitest"
   },
   "repository": {

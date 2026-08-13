@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "outDir": ".",
+        "rootDir": "src",
         "module": "esnext",
         "target": "esnext",
         "lib": ["esnext"],
@@ -20,7 +21,7 @@
         "noFallthroughCasesInSwitch": true,
         "esModuleInterop": true,
         "preserveConstEnums": true,
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "types": ["@cloudflare/workers-types"]
     },
     "include": ["src"],
