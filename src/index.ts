@@ -225,7 +225,7 @@ export async function verify<Payload = {}, Header = {}>(token: string, secret: s
             if (decodedToken.payload.nbf && decodedToken.payload.nbf > now && (decodedToken.payload.nbf - now) > (options.clockTolerance ?? 0))
                 throw new Error("NOT_YET_VALID")
 
-            if (decodedToken.payload.exp && decodedToken.payload.exp <= now && (now - decodedToken.payload.exp) > (options.clockTolerance ?? 0))
+            if (decodedToken.payload.exp && (now - decodedToken.payload.exp) >= (options.clockTolerance ?? 0))
                 throw new Error("EXPIRED")
         }
 

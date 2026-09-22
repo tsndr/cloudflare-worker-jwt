@@ -25,7 +25,7 @@ export function base64StringToUint8Array(b64str: string): Uint8Array {
 }
 
 export function textToUint8Array(str: string): Uint8Array {
-    return byteStringToBytes(str)
+    return new TextEncoder().encode(str)
 }
 
 export function arrayBufferToText(arrayBuffer: ArrayBuffer): string {
@@ -41,11 +41,7 @@ export function base64UrlToUint8Array(b64url: string): Uint8Array {
 }
 
 export function textToBase64Url(str: string): string {
-    const encoder = new TextEncoder()
-    const charCodes = encoder.encode(str)
-    const binaryStr = String.fromCharCode(...charCodes)
-
-    return btoa(binaryStr).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
+    return btoa(bytesToByteString(textToUint8Array(str))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
 }
 
 export function pemToBinary(pem: string): Uint8Array {
